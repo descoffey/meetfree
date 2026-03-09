@@ -238,7 +238,7 @@ const Onboarding = ({ onFinish }) => {
     </div>
     <div style={{ display:"flex", alignItems:"flex-start", gap:8 }}>
       <input type="checkbox" required id="gdpr" style={{ marginTop:2, accentColor:theme.greenBright, flexShrink:0 }} />
-      <label htmlFor="gdpr" style={{ fontSize:11, color:theme.textLight, lineHeight:1.5 }}>I agree to receive emails about MeetFree connections. You can unsubscribe at any time. View our <a href="/privacy" style={{ color:theme.greenMid }}>Privacy Policy</a>.</label>
+      <label htmlFor="gdpr" style={{ fontSize:11, color:theme.textLight, lineHeight:1.5 }}>I agree to receive emails about MeetFree connections. You can unsubscribe at any time. View our <a href="#" onClick={e => { e.preventDefault(); alert("Privacy Policy\n\nMeetFree collects your email address to notify you when we launch. We will never sell your data. You can request deletion at any time by emailing descoffey@gmail.com. Full privacy policy available on request."); }} style={{ color:theme.greenMid }}>Privacy Policy</a>.</label>
     </div>
   </form>
 </div>
@@ -612,7 +612,7 @@ const SettingsScreen = ({ onNav, onLogout, isPremium, onUpgrade }) => {
         <div style={{ margin: "4px 18px 8px" }}>
           <div style={sectionLabel}>Account</div>
           <div style={{ background: "white", borderRadius: 14, overflow: "hidden", border: "1px solid rgba(82,183,136,0.1)" }}>
-            <Row label="Privacy policy" right={<span style={{ color: theme.textLight }}>›</span>} />
+            <Row label="Privacy policy" right={<span style={{ color: theme.textLight }}>›</span>} onPress={() => handleNav("privacy")} />
             <Row label="Terms of service" right={<span style={{ color: theme.textLight }}>›</span>} />
             <Row label="Block & report" right={<span style={{ color: theme.textLight }}>›</span>} />
             <div onClick={onLogout} style={{ padding: "13px 18px", cursor: "pointer" }}><span style={{ color: theme.accent, fontWeight: 600, fontSize: 14 }}>Sign out</span></div>
@@ -692,6 +692,29 @@ export default function App() {
           {screen === "chat" && activeChat && <ChatDetail chat={activeChat} onBack={() => setActiveChat(null)} />}
           {screen === "profile" && <ProfileScreen onNav={handleNav} isPremium={isPremium} onUpgrade={handleUpgrade} />}
           {screen === "settings" && <SettingsScreen onNav={handleNav} onLogout={() => setScreen("onboarding")} isPremium={isPremium} onUpgrade={handleUpgrade} />}
+          {screen === "privacy" && (
+            <div style={{ flex:1, overflowY:"auto", padding:"24px 20px" }}>
+              <button onClick={() => setScreen("settings")} style={{ background:"none", border:"none", color:theme.greenMid, fontWeight:700, fontSize:14, cursor:"pointer", marginBottom:20, fontFamily:"'DM Sans',sans-serif" }}>← Back</button>
+              <h2 style={{ fontFamily:"Georgia,serif", fontSize:26, color:theme.greenDeep, marginBottom:6 }}>Privacy Policy</h2>
+              <p style={{ fontSize:11, color:theme.textLight, marginBottom:24 }}>Last updated: March 2026</p>
+              {[
+                ["Who We Are", "MeetFree is a plant-based connections app helping people find friends, dates and community. This policy explains how we handle your personal data."],
+                ["What We Collect", "We collect your email address when you join our waiting list, and profile information (name, age, city, interests) when you register."],
+                ["Why We Collect It", "We use your data to provide the MeetFree service, match you with other users, and send you relevant notifications. We will never sell your data."],
+                ["Legal Basis", "We process your data based on your explicit consent given during registration. You can withdraw consent at any time by deleting your account."],
+                ["Data Storage", "Your data is stored securely. We use industry-standard encryption and security practices to protect your information."],
+                ["How Long We Keep It", "We keep your data for as long as your account is active. If you delete your account, your data is permanently removed within 30 days."],
+                ["Your Rights", "Under GDPR you have the right to access, correct or delete your data at any time. Email us at descoffey@gmail.com and we will respond within 30 days."],
+                ["Cookies", "We use minimal cookies only to keep you logged in. We do not use tracking or advertising cookies."],
+                ["Contact Us", "For any privacy questions email descoffey@gmail.com or write to us at the address provided in our Terms & Conditions."],
+              ].map(([title, text]) => (
+                <div key={title} style={{ marginBottom:20 }}>
+                  <div style={{ fontWeight:700, color:theme.greenDeep, fontSize:15, marginBottom:6 }}>{title}</div>
+                  <div style={{ color:theme.textMid, fontSize:13, lineHeight:1.7 }}>{text}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
