@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "./supabase";
 
 const theme = {
   greenDeep: "#1a3a2a", greenMid: "#2d6a4f", greenBright: "#52b788",
@@ -198,49 +199,16 @@ const BottomNav = ({ active, onNav, isPremium }) => (
 
 const Onboarding = ({ onFinish }) => {
   const [step, setStep] = useState(0);
-  const [data, setData] = useState({ diet: "Vegan", name: "", age: "", city: "", interests: [], lookingFor: "" });
+  const [data, setData] = useState({ diet: "Vegan", name: "", age: "", city: "", interests: [], lookingFor: "", email: "", password: "" });
   const steps = [
     () => (
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", padding: "1rem 2rem", textAlign: "center" }}>
         <div style={{ fontSize: 60, marginBottom: 12 }}>🌱</div>
         <div style={{ fontFamily: "Georgia,serif", fontSize: 28, fontWeight: 700, color: theme.greenDeep, lineHeight: 1.1, marginBottom: 12 }}>Meet<span style={{ color: theme.greenBright, fontStyle: "italic" }}>Free</span></div>
         <p style={{ color: theme.textMid, fontSize: 14, lineHeight: 1.5, maxWidth: 280, marginBottom: 24 }}>Connect with like-minded people who care — about animals, the planet, and each other.</p>
- <div style={{ width:"100%", marginBottom:16, background:"rgba(82,183,136,0.08)", borderRadius:16, padding:"16px", border:"1px solid rgba(82,183,136,0.2)" }}>
-  <div style={{ fontSize:13, fontWeight:700, color:theme.greenDeep, marginBottom:4 }}>🌱 Coming soon — find your kind of people!</div>
-  <div style={{ fontSize:12, color:theme.textMid, marginBottom:12 }}>🎉 First 1,000 sign-ups get 3 months FREE Gold access!</div>
-  <form name="waitlist" method="POST" style={{ display:"flex", flexDirection:"column", gap:8 }} onSubmit={e => { e.preventDefault(); const data = new FormData(e.target); fetch("https://api.web3forms.com/submit", { method: "POST", body: data, headers: {"Accept": "application/json"} }).then(r => r.ok ? (alert("Thanks! We'll be in touch 🌱"), e.target.reset()) : alert("Oops, try again")).catch(() => alert("Oops, try again")); }}>
-    <input type="hidden" name="access_key" value="efa34483-83f4-481a-92ae-148eb048a44c" /><input type="hidden" name="subject" value="New MeetFree Waitlist Signup!" />
-    <div style={{ display:"flex", gap:8 }}>
-      <input type="text" name="name" placeholder="First name" required style={{ flex:1, padding:"10px 14px", borderRadius:50, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:13, outline:"none" }} />
-      <input type="email" name="email" placeholder="your@email.com" required style={{ flex:1, padding:"10px 14px", borderRadius:50, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:13, outline:"none" }} />
-    </div>
-    <div style={{ display:"flex", gap:8 }}>
-      <input type="text" name="city" placeholder="Your city" style={{ flex:1, padding:"10px 14px", borderRadius:50, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:13, outline:"none" }} />
-      <select name="looking_for" required style={{ flex:1, padding:"10px 14px", borderRadius:50, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:13, outline:"none", background:"white", color:theme.textDark }}>
-        <option value="">Looking for...</option>
-        <option value="Friends">🤝 Friends</option>
-        <option value="Dating">💚 Dating</option>
-        <option value="Both">🌱 Both</option>
-        <option value="Community">🌍 Community</option>
-      </select>
-    </div>
-    <div style={{ display:"flex", gap:8 }}>
-      <select name="heard_from" style={{ flex:1, padding:"10px 14px", borderRadius:50, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:13, outline:"none", background:"white", color:theme.textDark }}>
-        <option value="">How did you hear about us?</option>
-        <option value="Facebook">Facebook</option>
-        <option value="Instagram">Instagram</option>
-        <option value="Reddit">Reddit</option>
-        <option value="Friend">From a friend</option>
-        <option value="Google">Google search</option>
-        <option value="Other">Other</option>
-      </select>
-      <button type="submit" style={{ padding:"10px 16px", borderRadius:50, border:"none", background:theme.greenBright, color:"white", fontWeight:700, fontSize:13, cursor:"pointer", whiteSpace:"nowrap" }}>Notify me</button>
-    </div>
-    <div style={{ display:"flex", alignItems:"flex-start", gap:8 }}>
-      <input type="checkbox" required id="gdpr" style={{ marginTop:2, accentColor:theme.greenBright, flexShrink:0 }} />
-      <label htmlFor="gdpr" style={{ fontSize:11, color:theme.textLight, lineHeight:1.5 }}>I agree to receive emails about MeetFree connections. You can unsubscribe at any time. View our <a href="#" onClick={e => { e.preventDefault(); alert("Privacy Policy\n\nMeetFree collects your email address to notify you when we launch. We will never sell your data. You can request deletion at any time by emailing descoffey@gmail.com. Full privacy policy available on request."); }} style={{ color:theme.greenMid }}>Privacy Policy</a>.</label>
-    </div>
-  </form>
+ <div style={{ width:"100%", marginBottom:16, background:"rgba(82,183,136,0.08)", borderRadius:16, padding:"16px", border:"1px solid rgba(82,183,136,0.2)", textAlign:"center" }}>
+  <div style={{ fontSize:15, fontWeight:700, color:theme.greenDeep, marginBottom:6 }}>🎉 First 1,000 sign-ups get 3 months FREE Gold access!</div>
+  <div style={{ fontSize:13, color:theme.textMid }}>Join today — it's completely free 🌱</div>
 </div>
 <button onClick={() => setStep(1)} style={btnPrimary}>Get started →</button>
         <p style={{ marginTop: 16, color: theme.textLight, fontSize: 13 }}>Already have an account? <span style={{ color: theme.greenMid, fontWeight: 600 }}>Sign in</span></p>
@@ -248,7 +216,7 @@ const Onboarding = ({ onFinish }) => {
     ),
     () => (
       <div style={{ flex: 1, padding: "2rem" }}>
-        <ProgressBar step={1} total={4} />
+        <ProgressBar step={1} total={5} />
         <h2 style={heading}>I eat a <span style={{ color: theme.greenBright, fontStyle: "italic" }}>{data.diet.toLowerCase()}</span> diet</h2>
         <p style={subText}>This helps us match you with like-minded people</p>
         {["Vegan","Vegetarian","Whole-food plant-based","Raw vegan"].map(d => (
@@ -280,10 +248,10 @@ const Onboarding = ({ onFinish }) => {
     ),
     () => (
       <div style={{ flex: 1, padding: "2rem" }}>
-        <ProgressBar step={2} total={4} />
+        <ProgressBar step={3} total={5} />
         <h2 style={heading}>Tell us about <span style={{ color: theme.greenBright, fontStyle: "italic" }}>you</span></h2>
         <p style={subText}>Your profile info</p>
-        {[{ label: "First name", key: "name", placeholder: "e.g. Sophie", type: "text" }, { label: "Age", key: "age", placeholder: "e.g. 28", type: "number" }, { label: "City", key: "city", placeholder: "e.g. London", type: "text" }].map(f => (
+        {[{ label: "First name", key: "name", placeholder: "e.g. Sophie", type: "text" }, { label: "Age", key: "age", placeholder: "e.g. 28", type: "number" }, { label: "City", key: "city", placeholder: "e.g. London", type: "text" }, { label: "Email", key: "email", placeholder: "your@email.com", type: "email" }, { label: "Password", key: "password", placeholder: "Min 6 characters", type: "password" }].map(f => (
           <div key={f.key} style={{ marginBottom: 16 }}>
             <label style={{ fontSize: 12, fontWeight: 600, color: theme.textMid, letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: 6 }}>{f.label}</label>
             <input type={f.type} placeholder={f.placeholder} value={data[f.key]} onChange={e => setData(p => ({ ...p, [f.key]: e.target.value }))} style={inputStyle} />
@@ -294,7 +262,7 @@ const Onboarding = ({ onFinish }) => {
     ),
     () => (
       <div style={{ flex: 1, padding: "2rem" }}>
-        <ProgressBar step={3} total={4} />
+        <ProgressBar step={4} total={5} />
         <h2 style={heading}>What are you <span style={{ color: theme.greenBright, fontStyle: "italic" }}>into?</span></h2>
         <p style={subText}>Pick up to 5 interests</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16 }}>
@@ -303,18 +271,18 @@ const Onboarding = ({ onFinish }) => {
             return <button key={i} onClick={() => setData(p => ({ ...p, interests: active ? p.interests.filter(x => x !== i) : p.interests.length < 5 ? [...p.interests, i] : p.interests }))} style={{ padding: "10px 16px", borderRadius: 50, border: `2px solid ${active ? theme.greenDeep : "rgba(82,183,136,0.25)"}`, background: active ? theme.greenDeep : "white", color: active ? "white" : theme.textDark, fontSize: 14, fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>{i}</button>;
           })}
         </div>
-        <button onClick={() => setStep(4)} style={{ ...btnPrimary, marginTop: 24 }}>Continue →</button>
+        <button onClick={() => setStep(5)} style={{ ...btnPrimary, marginTop: 24 }}>Continue →</button>
       </div>
     ),
     () => (
       <div style={{ flex: 1, padding: "2rem", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
-        <ProgressBar step={4} total={4} />
+        <ProgressBar step={5} total={5} />
         <div style={{ fontSize: 72, marginBottom: 16 }}>📸</div>
         <h2 style={{ ...heading, textAlign: "center" }}>Add your <span style={{ color: theme.greenBright, fontStyle: "italic" }}>photo</span></h2>
         <p style={{ ...subText, textAlign: "center", marginBottom: 12 }}>Profiles with photos get 8× more matches</p>
         <div style={{ width: 160, height: 160, borderRadius: "50%", background: "linear-gradient(135deg,rgba(82,183,136,0.15),rgba(149,213,178,0.1))", border: `3px dashed rgba(82,183,136,0.3)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40, cursor: "pointer", marginBottom: 12 }}>➕</div>
-        <button onClick={onFinish} style={btnPrimary}>Let's go! 🌱</button>
-        <button onClick={onFinish} style={{ ...btnGhost, marginTop: 12 }}>Skip for now</button>
+        <button onClick={() => onFinish(data)} style={btnPrimary}>Let's go! 🌱</button>
+        <button onClick={() => onFinish(data)} style={{ ...btnGhost, marginTop: 12 }}>Skip for now</button>
       </div>
     ),
   ];
@@ -686,7 +654,27 @@ export default function App() {
               <Paywall trigger="generic" onClose={() => setShowPaywall(false)} onSubscribe={handleSubscribe} />
             </div>
           )}
-          {screen === "onboarding" && <Onboarding onFinish={() => setScreen("swipe")} />}
+          {screen === "onboarding" && <Onboarding onFinish={async (profileData) => {
+  try {
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: profileData.email,
+      password: profileData.password,
+    });
+    if (authError) { alert("Signup error: " + authError.message); return; }
+    const { error: profileError } = await supabase.from("profiles").insert({
+      id: authData.user.id,
+      email: profileData.email,
+      name: profileData.name,
+      age: parseInt(profileData.age),
+      city: profileData.city,
+      diet: profileData.diet,
+      looking_for: profileData.lookingFor,
+      interests: profileData.interests,
+    });
+    if (profileError) console.error("Profile error:", profileError);
+    setScreen("swipe");
+  } catch(e) { console.error(e); setScreen("swipe"); }
+}} />}
           {screen === "swipe" && <SwipeScreen onNav={handleNav} isPremium={isPremium} onUpgrade={handleUpgrade} />}
           {screen === "chat" && !activeChat && <ChatList onNav={handleNav} onOpenChat={c => setActiveChat(c)} isPremium={isPremium} onUpgrade={handleUpgrade} />}
           {screen === "chat" && activeChat && <ChatDetail chat={activeChat} onBack={() => setActiveChat(null)} />}
