@@ -197,7 +197,41 @@ const BottomNav = ({ active, onNav, isPremium }) => (
 
 // ─── ONBOARDING ───────────────────────────────────────────────────────────────
 
-const Onboarding = ({ onFinish }) => {
+const SignInForm = ({ onSuccess, onClose }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSignIn = async () => {
+    if (!email || !password) { alert("Please enter your email and password"); return; }
+    setLoading(true);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (error) { alert("Sign in failed: " + error.message); return; }
+    onSuccess(data.user);
+  };
+
+  return (
+    <div>
+      <div style={{ marginBottom:14 }}>
+        <label style={{ fontSize:12, fontWeight:600, color:theme.textMid, textTransform:"uppercase", letterSpacing:"0.05em", display:"block", marginBottom:6 }}>Email</label>
+        <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com" style={{ width:"100%", padding:"12px 16px", borderRadius:12, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:"none", boxSizing:"border-box" }} />
+      </div>
+      <div style={{ marginBottom:20 }}>
+        <label style={{ fontSize:12, fontWeight:600, color:theme.textMid, textTransform:"uppercase", letterSpacing:"0.05em", display:"block", marginBottom:6 }}>Password</label>
+        <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Your password" style={{ width:"100%", padding:"12px 16px", borderRadius:12, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:"none", boxSizing:"border-box" }} />
+      </div>
+      <button onClick={handleSignIn} disabled={loading} style={{ width:"100%", padding:"14px", borderRadius:50, border:"none", background:theme.greenDeep, color:"white", fontWeight:700, fontSize:16, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", marginBottom:10, opacity:loading ? 0.7 : 1 }}>
+        {loading ? "Signing in..." : "Sign in 🌱"}
+      </button>
+      <button onClick={onClose} style={{ width:"100%", padding:"12px", borderRadius:50, border:"2px solid rgba(82,183,136,0.2)", background:"none", color:theme.textMid, fontWeight:600, fontSize:14, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+        Cancel
+      </button>
+    </div>
+  );
+};
+
+const Onboarding = ({ onFinish, onShowSignIn }) => {
   const [step, setStep] = useState(0);
   const [data, setData] = useState({ diet: "Vegan", name: "", age: "", city: "", interests: [], lookingFor: "", email: "", password: "" });
   const steps = [
@@ -211,7 +245,7 @@ const Onboarding = ({ onFinish }) => {
   <div style={{ fontSize:13, color:theme.textMid }}>Join today — it's completely free 🌱</div>
 </div>
 <button onClick={() => setStep(1)} style={btnPrimary}>Get started →</button>
-        <p style={{ marginTop: 16, color: theme.textLight, fontSize: 13 }}>Already have an account? <span style={{ color: theme.greenMid, fontWeight: 600 }}>Sign in</span></p>
+        <p style={{ marginTop: 16, color: theme.textLight, fontSize: 13 }}>Already have an account? <span onClick={onShowSignIn} style={{ color: theme.greenMid, fontWeight: 600, cursor: "pointer" }}>Sign in</span></p>
       </div>
     ),
     () => (
@@ -389,7 +423,7 @@ const ChatList = ({ onNav, onOpenChat, isPremium, onUpgrade }) => (
   <PhoneShell>
     <div style={{ padding: "16px 24px 8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
       <h1 style={{ fontFamily: "Georgia,serif", fontSize: 26, fontWeight: 700, color: theme.greenDeep }}>Messages</h1>
-      <button style={iconBtn}>✏️</button>
+      <button style={iconBtn}>🔍</button>
     </div>
     {!isPremium && <AdBanner onUpgrade={onUpgrade} />}
     <div style={{ padding: "0 24px 14px" }}>
@@ -470,21 +504,83 @@ const ChatDetail = ({ chat, onBack }) => {
 
 // ─── PROFILE ──────────────────────────────────────────────────────────────────
 
-const ProfileScreen = ({ onNav, isPremium, onUpgrade }) => {
-  const user = { name: "You", age: 28, city: "London", diet: "Vegan", emoji: "🌿", interests: ["🧘 Yoga", "🍳 Cooking", "✈️ Travel"], bio: "Plant-based foodie and yoga enthusiast. Looking for friends, dates or community to explore vegan restaurants with!" };
+const ProfileScreen = ({ onNav, isPremium, onUpgrade, currentUser }) => {
+  const [user, setUser] = useState(null);
+  const [editing, setEditing] = useState(false);
+  const [editData, setEditData] = useState({});
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) return;
+      const { data } = await supabase.from("profiles").select("*").eq("id", authUser.id).single();
+      if (data) { setUser(data); setEditData(data); }
+    };
+    loadProfile();
+  }, []);
+
+  const saveProfile = async () => {
+    const authUser = currentUser;
+    if (!authUser) return;
+    await supabase.from("profiles").update({
+      name: editData.name,
+      age: parseInt(editData.age),
+      city: editData.city,
+      bio: editData.bio,
+    }).eq("id", authUser.id);
+    setUser({...user, ...editData});
+    setEditing(false);
+  };
+
+  if (!user) return (
+    <PhoneShell>
+      <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <div style={{ color:theme.textMid, fontSize:14 }}>Loading profile...</div>
+      </div>
+      <BottomNav active="profile" onNav={onNav} isPremium={isPremium} />
+    </PhoneShell>
+  );
+
+  if (editing) return (
+    <PhoneShell>
+      <div style={{ padding:"16px 24px 8px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+        <h1 style={{ fontFamily:"Georgia,serif", fontSize:26, fontWeight:700, color:theme.greenDeep }}>Edit Profile</h1>
+        <button onClick={() => setEditing(false)} style={iconBtn}>✕</button>
+      </div>
+      <div style={{ flex:1, overflowY:"auto", padding:"0 20px" }}>
+        {[
+          { label:"Name", key:"name", type:"text" },
+          { label:"Age", key:"age", type:"number" },
+          { label:"City", key:"city", type:"text" },
+        ].map(f => (
+          <div key={f.key} style={{ marginBottom:16 }}>
+            <label style={{ fontSize:12, fontWeight:600, color:theme.textMid, textTransform:"uppercase", letterSpacing:"0.05em", display:"block", marginBottom:6 }}>{f.label}</label>
+            <input type={f.type} value={editData[f.key] || ""} onChange={e => setEditData(p => ({...p, [f.key]:e.target.value}))} style={{ width:"100%", padding:"12px 16px", borderRadius:12, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:"none", boxSizing:"border-box" }} />
+          </div>
+        ))}
+        <div style={{ marginBottom:16 }}>
+          <label style={{ fontSize:12, fontWeight:600, color:theme.textMid, textTransform:"uppercase", letterSpacing:"0.05em", display:"block", marginBottom:6 }}>Bio</label>
+          <textarea value={editData.bio || ""} onChange={e => setEditData(p => ({...p, bio:e.target.value}))} rows={4} style={{ width:"100%", padding:"12px 16px", borderRadius:12, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:"none", boxSizing:"border-box", resize:"none" }} />
+        </div>
+        <button onClick={saveProfile} style={{ ...btnPrimary, width:"100%", marginBottom:10 }}>Save changes</button>
+      </div>
+      <BottomNav active="profile" onNav={onNav} isPremium={isPremium} />
+    </PhoneShell>
+  );
+
   return (
     <PhoneShell>
       <div style={{ padding: "16px 24px 8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h1 style={{ fontFamily: "Georgia,serif", fontSize: 26, fontWeight: 700, color: theme.greenDeep }}>My Profile</h1>
-        <button style={iconBtn}>✏️</button>
+        <button onClick={() => setEditing(true)} style={iconBtn}>✏️</button>
       </div>
       <div style={{ flex: 1, overflowY: "auto" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "18px 0 14px" }}>
-          <div style={{ width: 96, height: 96, borderRadius: "50%", background: "linear-gradient(135deg,#d8f3dc,#b7e4c7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 46, border: `4px solid ${isPremium ? theme.gold : theme.greenBright}`, marginBottom: 10, boxShadow: isPremium ? `0 8px 24px rgba(244,168,41,0.3)` : "0 8px 24px rgba(82,183,136,0.2)" }}>{user.emoji}</div>
+          <div style={{ width: 96, height: 96, borderRadius: "50%", background: "linear-gradient(135deg,#d8f3dc,#b7e4c7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 46, border: `4px solid ${isPremium ? theme.gold : theme.greenBright}`, marginBottom: 10, boxShadow: isPremium ? `0 8px 24px rgba(244,168,41,0.3)` : "0 8px 24px rgba(82,183,136,0.2)" }}>🌿</div>
           <div style={{ fontFamily: "Georgia,serif", fontSize: 22, fontWeight: 700, color: theme.greenDeep }}>{user.name}, {user.age}</div>
           <div style={{ color: theme.textMid, fontSize: 13, marginTop: 3 }}>📍 {user.city}</div>
           <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-            <span style={{ background: theme.greenDeep, color: "white", fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 50 }}>🌱 {user.diet}</span>
+            <span style={{ background: theme.greenDeep, color: "white", fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 50 }}>🌱 {user.diet || "Vegan"}</span>
             {isPremium && <span style={{ background: theme.gold, color: "white", fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 50 }}>👑 Gold</span>}
           </div>
         </div>
@@ -498,12 +594,12 @@ const ProfileScreen = ({ onNav, isPremium, onUpgrade }) => {
         </div>
         <div style={{ margin: "0 20px 12px" }}>
           <div style={sectionLabel}>About me</div>
-          <p style={{ fontSize: 14, color: theme.textMid, lineHeight: 1.7 }}>{user.bio}</p>
+          <p style={{ fontSize: 14, color: theme.textMid, lineHeight: 1.7 }}>{user.bio || "No bio yet — tap edit to add one!"}</p>
         </div>
         <div style={{ margin: "0 20px 14px" }}>
           <div style={sectionLabel}>Interests</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-            {user.interests.map(i => <span key={i} style={{ background: "rgba(82,183,136,0.1)", color: theme.greenMid, fontSize: 12, fontWeight: 600, padding: "4px 12px", borderRadius: 50 }}>{i}</span>)}
+            {(user.interests || []).map(i => <span key={i} style={{ background: "rgba(82,183,136,0.1)", color: theme.greenMid, fontSize: 12, fontWeight: 600, padding: "4px 12px", borderRadius: 50 }}>{i}</span>)}
           </div>
         </div>
         {!isPremium ? (
@@ -608,6 +704,8 @@ const sectionLabel = { fontSize: 11, fontWeight: 700, color: theme.textLight, le
 
 export default function App() {
   const [screen, setScreen] = useState("onboarding");
+  const [showSignIn, setShowSignIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const [activeChat, setActiveChat] = useState(null);
   const [isPremium, setIsPremium] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
@@ -654,7 +752,16 @@ export default function App() {
               <Paywall trigger="generic" onClose={() => setShowPaywall(false)} onSubscribe={handleSubscribe} />
             </div>
           )}
-          {screen === "onboarding" && <Onboarding onFinish={async (profileData) => {
+          {showSignIn && (
+  <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}>
+    <div style={{ background:"white", borderRadius:24, padding:"28px", width:"100%", maxWidth:380 }}>
+      <h2 style={{ fontFamily:"Georgia,serif", fontSize:24, color:theme.greenDeep, marginBottom:8 }}>Welcome back 🌱</h2>
+      <p style={{ color:theme.textMid, fontSize:14, marginBottom:20 }}>Sign in to your MeetFree account</p>
+      <SignInForm onSuccess={(user) => { setCurrentUser(user); setShowSignIn(false); setScreen("swipe"); }} onClose={() => setShowSignIn(false)} />
+    </div>
+  </div>
+)}
+{screen === "onboarding" && <Onboarding onShowSignIn={() => setShowSignIn(true)} onFinish={async (profileData) => {
   try {
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: profileData.email,
@@ -672,13 +779,14 @@ export default function App() {
       interests: profileData.interests,
     });
     if (profileError) console.error("Profile error:", profileError);
+    setCurrentUser(authData.user);
     setScreen("swipe");
   } catch(e) { console.error(e); setScreen("swipe"); }
 }} />}
           {screen === "swipe" && <SwipeScreen onNav={handleNav} isPremium={isPremium} onUpgrade={handleUpgrade} />}
           {screen === "chat" && !activeChat && <ChatList onNav={handleNav} onOpenChat={c => setActiveChat(c)} isPremium={isPremium} onUpgrade={handleUpgrade} />}
           {screen === "chat" && activeChat && <ChatDetail chat={activeChat} onBack={() => setActiveChat(null)} />}
-          {screen === "profile" && <ProfileScreen onNav={handleNav} isPremium={isPremium} onUpgrade={handleUpgrade} />}
+          {screen === "profile" && <ProfileScreen onNav={handleNav} isPremium={isPremium} onUpgrade={handleUpgrade} currentUser={currentUser} />}
           {screen === "settings" && <SettingsScreen onNav={handleNav} onLogout={() => setScreen("onboarding")} isPremium={isPremium} onUpgrade={handleUpgrade} />}
           {screen === "privacy" && (
             <div style={{ flex:1, overflowY:"auto", padding:"24px 20px" }}>
