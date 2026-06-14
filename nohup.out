@@ -1,0 +1,471 @@
+👀 Watching for App.js in ~/Downloads...
+✅ App.js found! Deploying...
+
+> meetfree-web@1.0.0 build
+> react-scripts build
+
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+  134.62 kB (+21 B)  build/static/js/main.45988863.js
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+
+ ⛅️ wrangler 4.98.0
+───────────────────
+Uploading... (2/6)
+Uploading... (3/6)
+Uploading... (4/6)
+Uploading... (6/6)
+✨ Success! Uploaded 4 files (2 already uploaded) (1.97 sec)
+
+✨ Uploading _headers
+✨ Uploading _redirects
+🌎 Deploying...
+✨ Deployment complete! Take a peek over at https://bb452a25.meetfree2.pages.dev
+🚀 Done! Watching again...
+👀 Watching for App.js in ~/Downloads...
+✅ App.js found! Deploying...
+
+> meetfree-web@1.0.0 build
+> react-scripts build
+
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+
+ ⛅️ wrangler 4.98.0
+───────────────────
+Uploading... (2/6)
+Uploading... (3/6)
+Uploading... (4/6)
+Uploading... (6/6)
+✨ Success! Uploaded 4 files (2 already uploaded) (1.39 sec)
+
+✨ Uploading _headers
+✨ Uploading _redirects
+🌎 Deploying...
+✨ Deployment complete! Take a peek over at https://dfcfffb1.meetfree2.pages.dev
+rm: cannot remove '/home/des/Downloads/App.js': No such file or directory
+🚀 Done! Watching again...
+✅ App.js found! Deploying...
+
+> meetfree-web@1.0.0 build
+> react-scripts build
+
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+
+ ⛅️ wrangler 4.98.0
+───────────────────
+Uploading... (2/6)
+Uploading... (3/6)
+Uploading... (4/6)
+Uploading... (6/6)
+✨ Success! Uploaded 4 files (2 already uploaded) (1.69 sec)
+
+✨ Uploading _headers
+✨ Uploading _redirects
+🌎 Deploying...
+✨ Deployment complete! Take a peek over at https://c215be1b.meetfree2.pages.dev
+rm: cannot remove '/home/des/Downloads/App.js': No such file or directory
+🚀 Done! Watching again...
+✅ App.js found! Deploying...
+
+> meetfree-web@1.0.0 build
+> react-scripts build
+
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+  136.89 kB (-27 B)  build/static/js/main.a7bffb91.js
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+
+ ⛅️ wrangler 4.98.0
+───────────────────
+Uploading... (2/6)
+Uploading... (3/6)
+Uploading... (4/6)
+Uploading... (6/6)
+✨ Success! Uploaded 4 files (2 already uploaded) (1.64 sec)
+
+✨ Uploading _headers
+✨ Uploading _redirects
+🌎 Deploying...
+✨ Deployment complete! Take a peek over at https://07749279.meetfree2.pages.dev
+🚀 Done! Watching again...
+✅ App.js found! Deploying...
+
+> meetfree-web@1.0.0 build
+> react-scripts build
+
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+  136.91 kB (+26 B)  build/static/js/main.50a82236.js
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+
+ ⛅️ wrangler 4.98.0
+───────────────────
+Uploading... (2/6)
+Uploading... (3/6)
+Uploading... (4/6)
+Uploading... (6/6)
+✨ Success! Uploaded 4 files (2 already uploaded) (1.80 sec)
+
+✨ Uploading _headers
+✨ Uploading _redirects
+🌎 Deploying...
+✨ Deployment complete! Take a peek over at https://39f660f8.meetfree2.pages.dev
+🚀 Done! Watching again...
+✅ App.js found! Deploying...
+
+> meetfree-web@1.0.0 build
+> react-scripts build
+
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+  136.91 kB (-2 B)  build/static/js/main.3bd3176f.js
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+
+ ⛅️ wrangler 4.98.0
+───────────────────
+Uploading... (2/6)
+Uploading... (3/6)
+Uploading... (4/6)
+Uploading... (6/6)
+✨ Success! Uploaded 4 files (2 already uploaded) (1.88 sec)
+
+✨ Uploading _headers
+✨ Uploading _redirects
+🌎 Deploying...
+✨ Deployment complete! Take a peek over at https://575642eb.meetfree2.pages.dev
+🚀 Done! Watching again...
+✅ App.js found! Deploying...
+
+> meetfree-web@1.0.0 build
+> react-scripts build
+
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+  136.91 kB (-4 B)  build/static/js/main.2be43e0d.js
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+
+ ⛅️ wrangler 4.98.0
+───────────────────
+Uploading... (2/6)
+Uploading... (3/6)
+Uploading... (4/6)
+Uploading... (6/6)
+✨ Success! Uploaded 4 files (2 already uploaded) (1.75 sec)
+
+✨ Uploading _headers
+✨ Uploading _redirects
+🌎 Deploying...
+✨ Deployment complete! Take a peek over at https://90c135e2.meetfree2.pages.dev
+🚀 Done! Watching again...
+✅ App.js found! Deploying...
+
+> meetfree-web@1.0.0 build
+> react-scripts build
+
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+
+ ⛅️ wrangler 4.98.0
+───────────────────
+Uploading... (2/6)
+Uploading... (3/6)
+Uploading... (4/6)
+Uploading... (6/6)
+✨ Success! Uploaded 4 files (2 already uploaded) (1.88 sec)
+
+✨ Uploading _headers
+✨ Uploading _redirects
+🌎 Deploying...
+✨ Deployment complete! Take a peek over at https://56e7e897.meetfree2.pages.dev
+🚀 Done! Watching again...
+✅ App.js found! Deploying...
+
+> meetfree-web@1.0.0 build
+> react-scripts build
+
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+  137.48 kB (+339 B)  build/static/js/main.6d9d19a5.js
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+
+ ⛅️ wrangler 4.98.0
+───────────────────
+Uploading... (2/6)
+Uploading... (3/6)
+Uploading... (4/6)
+Uploading... (6/6)
+✨ Success! Uploaded 4 files (2 already uploaded) (1.61 sec)
+
+✨ Uploading _headers
+✨ Uploading _redirects
+🌎 Deploying...
+✨ Deployment complete! Take a peek over at https://bc829055.meetfree2.pages.dev
+rm: cannot remove '/home/des/Downloads/App.js': No such file or directory
+🚀 Done! Watching again...
+✅ App.js found! Deploying...
+
+> meetfree-web@1.0.0 build
+> react-scripts build
+
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+
+ ⛅️ wrangler 4.98.0
+───────────────────
+Uploading... (2/6)
+Uploading... (3/6)
+Uploading... (4/6)
+Uploading... (6/6)
+✨ Success! Uploaded 4 files (2 already uploaded) (1.84 sec)
+
+✨ Uploading _headers
+✨ Uploading _redirects
+🌎 Deploying...
+✨ Deployment complete! Take a peek over at https://1f1e6923.meetfree2.pages.dev
+🚀 Done! Watching again...
+✅ App.js found! Deploying...
+
+> meetfree-web@1.0.0 build
+> react-scripts build
+
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+  139.33 kB  build/static/js/main.6755f753.js
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+
+ ⛅️ wrangler 4.98.0
+───────────────────
+Uploading... (2/6)
+Uploading... (3/6)
+Uploading... (4/6)
+Uploading... (6/6)
+✨ Success! Uploaded 4 files (2 already uploaded) (1.83 sec)
+
+✨ Uploading _headers
+✨ Uploading _redirects
+🌎 Deploying...
+✨ Deployment complete! Take a peek over at https://febd02e0.meetfree2.pages.dev
+rm: cannot remove '/home/des/Downloads/App.js': No such file or directory
+🚀 Done! Watching again...
+✅ App.js found! Deploying...
+
+> meetfree-web@1.0.0 build
+> react-scripts build
+
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+  139.33 kB (-1 B)  build/static/js/main.bba75f96.js
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+
+ ⛅️ wrangler 4.98.0
+───────────────────
+Uploading... (2/6)
+Uploading... (3/6)
+Uploading... (4/6)
+Uploading... (6/6)
+✨ Success! Uploaded 4 files (2 already uploaded) (1.54 sec)
+
+✨ Uploading _headers
+✨ Uploading _redirects
+🌎 Deploying...
+✨ Deployment complete! Take a peek over at https://23ddac64.meetfree2.pages.dev
+rm: cannot remove '/home/des/Downloads/App.js': No such file or directory
+🚀 Done! Watching again...
