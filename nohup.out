@@ -560,3 +560,47 @@ Uploading... (27/27)
 🌎 Deploying...
 ✨ Deployment complete! Take a peek over at https://03774503.meetfree2.pages.dev
 💾 Backing up to GitHub...
+[main 7088e8b9] Auto backup 20260624 18:17
+ 2 files changed, 52 insertions(+), 1 deletion(-)
+To https://github.com/descoffey/meetfree.git
+   3cbe078c..7088e8b9  main -> main
+🚀 Done! 24 Jun 2026 18:17:10 Watching again...
+✅ App.js found! Deploying... (24 Jun 2026 19:32:27)
+
+> meetfree-web@1.0.0 build
+> react-scripts build && cp public/manifest.json build/manifest.json && cp -r public/icons build/icons && cp public/sw.js build/sw.js
+
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+  150.94 kB  build/static/js/main.dcef7996.js
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+
+ ⛅️ wrangler 4.104.0
+────────────────────
+Uploading... (0/27)
+Uploading... (9/27)
+Uploading... (18/27)
+Uploading... (27/27)
+✨ Success! Uploaded 27 files (2.31 sec)
+
+✨ Uploading _headers
+✨ Uploading _redirects
+🌎 Deploying...
+✨ Deployment complete! Take a peek over at https://01e7733e.meetfree2.pages.dev
+💾 Backing up to GitHub...
