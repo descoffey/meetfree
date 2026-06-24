@@ -14,7 +14,7 @@ serve(async (req) => {
   const subscription = typeof sub.subscription === "string" ? JSON.parse(sub.subscription) : sub.subscription;
   if (!subscription?.endpoint) { console.error("No endpoint:", subscription); return new Response(JSON.stringify({ skipped: true, reason: "no endpoint" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
   try {
-    await webpush.sendNotification(subscription, JSON.stringify({ title: title || "MeetFree", body, url: url || "https://meetfree.uk" }));
+    await webpush.sendNotification(subscription, JSON.stringify({ title: title || "MeetFree", body, url: url || "https://app.meetfree.uk" }));
     return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch(e) {
     console.error("Push error:", e);

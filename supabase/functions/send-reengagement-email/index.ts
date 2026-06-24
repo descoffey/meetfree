@@ -78,12 +78,12 @@ serve(async () => {
       ${newUsersLine}
       ${matchLine}
       <div style="text-align:center;margin-top:24px;">
-        <a href="https://meetfree.uk" style="display:inline-block;background:#52b788;color:white;font-weight:700;font-size:15px;padding:14px 32px;border-radius:50px;text-decoration:none;">See what's waiting 💚</a>
+        <a href="https://app.meetfree.uk" style="display:inline-block;background:#52b788;color:white;font-weight:700;font-size:15px;padding:14px 32px;border-radius:50px;text-decoration:none;">See what's waiting 💚</a>
       </div>
     </div>
     <div style="padding:16px 28px 28px;text-align:center;border-top:1px solid rgba(82,183,136,0.1);">
       <p style="font-size:11px;color:#8fa58f;margin:0;">You're receiving this because you have a MeetFree account.<br>
-      <a href="https://meetfree.uk" style="color:#52b788;">Visit MeetFree</a> · <a href="mailto:hello@meetfree.uk" style="color:#52b788;">Unsubscribe</a></p>
+      <a href="https://app.meetfree.uk" style="color:#52b788;">Visit MeetFree</a> · <a href="mailto:hello@meetfree.uk" style="color:#52b788;">Unsubscribe</a></p>
     </div>
   </div>
 </body>

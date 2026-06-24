@@ -363,7 +363,7 @@ const SignInForm = ({ onSuccess, onClose, message }) => {
     if (!email.trim()) { setError("Please enter your email address first."); return; }
     setLoading(true);
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: "https://meetfree.uk",
+      redirectTo: "https://app.meetfree.uk",
     });
     setLoading(false);
     if (resetError) { setError("Could not send reset email. Please try again."); return; }
@@ -391,7 +391,7 @@ const SignInForm = ({ onSuccess, onClose, message }) => {
           <label style={{ fontSize:12, fontWeight:600, color:theme.textMid, textTransform:"uppercase", letterSpacing:"0.05em", display:"block", marginBottom:6 }}>Password</label>
           <div style={{ position:"relative" }}>
             <input key={showPw ? "si-text" : "si-pw"} type={showPw ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSignIn()} placeholder="Your password" style={{ width:"100%", padding:"12px 44px 12px 16px", borderRadius:12, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:"none", boxSizing:"border-box" }} />
-            <button type="button" onClick={() => setShowPw(p => !p)} style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", fontSize:16, color:theme.textLight, padding:0 }}>{showPw ? "🙈" : "👁"}</button>
+            <button type="button" onClick={() => setShowPw(p => !p)} style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", fontSize:16, color:theme.textLight, padding:0 }}>{showPw ? "Hide" : "Show"}</button>
           </div>
         </div>
       )}
@@ -422,11 +422,13 @@ const SignInForm = ({ onSuccess, onClose, message }) => {
   );
 };
 
-const Onboarding = ({ onFinish, onShowSignIn }) => {
+const Onboarding = ({ onFinish, onShowSignIn, onClearSignupError }) => {
   const [step, setStep] = useState(0);
+  useEffect(() => { if (onClearSignupError) onClearSignupError(); }, [step]);
   const [data, setData] = useState({ diet: "Vegan", name: "", age: "", city: "", postcode: "", bio: "", interests: [], lookingFor: "", email: "", password: "", smoker: false });
   const [uploading, setUploading] = useState(false);
   const [showGold, setShowGold] = useState(false);
+  const [onboardingError, setOnboardingError] = useState("");
   const steps = [
     () => (
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", padding: "1rem 2rem", textAlign: "center" }}>
@@ -477,7 +479,7 @@ const Onboarding = ({ onFinish, onShowSignIn }) => {
     ),
     () => (
       <div style={{ flex: 1, padding: "2rem", overflowY: "auto" }}>
-        <button onClick={() => setStep(2)} style={{ background:"none", border:"none", color:theme.greenMid, fontWeight:700, fontSize:14, cursor:"pointer", marginBottom:8, fontFamily:"'DM Sans',sans-serif", padding:0 }}>← Back</button>
+        <button onClick={() => { setOnboardingError(""); setStep(2); }} style={{ background:"none", border:"none", color:theme.greenMid, fontWeight:700, fontSize:14, cursor:"pointer", marginBottom:8, fontFamily:"'DM Sans',sans-serif", padding:0 }}>← Back</button>
         <ProgressBar step={3} total={7} />
         <h2 style={heading}>Tell us about <span style={{ color: theme.greenBright, fontStyle: "italic" }}>you</span></h2>
         <p style={subText}>Your profile info</p>
@@ -490,15 +492,16 @@ const Onboarding = ({ onFinish, onShowSignIn }) => {
         <div style={{ marginBottom: 16 }}>
           <label style={{ fontSize: 12, fontWeight: 600, color: theme.textMid, letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: 6 }}>Password</label>
           <div style={{ position:"relative" }}>
-            <input type={data.showPassword ? "text" : "password"} placeholder="Min 6 characters" value={data.password} onChange={e => setData(p => ({ ...p, password: e.target.value }))} style={{ ...inputStyle, paddingRight: 44 }} />
-            <button type="button" onClick={() => setData(p => ({ ...p, showPassword: !p.showPassword }))} style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", fontSize:16, color:theme.textLight, padding:0 }}>{data.showPassword ? "🙈" : "👁"}</button>
+            <input type={data.showPassword ? "text" : "password"} placeholder="At least 8 characters" value={data.password} onChange={e => setData(p => ({ ...p, password: e.target.value }))} style={{ ...inputStyle, paddingRight: 44 }} />
+            <button type="button" onClick={() => setData(p => ({ ...p, showPassword: !p.showPassword }))} style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", fontSize:16, color:theme.textLight, padding:0 }}>{data.showPassword ? "Hide" : "Show"}</button>
           </div>
+          <div style={{ fontSize:11, color:theme.textLight, marginTop:6, lineHeight:1.5 }}>Must be 8+ characters with at least one lowercase letter, one UPPERCASE letter, one number, and one symbol (e.g. <strong>Plant1!</strong>)</div>
         </div>
         <div style={{ marginBottom: 16 }}>
           <label style={{ fontSize: 12, fontWeight: 600, color: theme.textMid, letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: 6 }}>Confirm Password</label>
           <div style={{ position:"relative" }}>
-            <input type={data.showPassword ? "text" : "password"} placeholder="Re-enter your password" value={data.confirmPassword || ""} onChange={e => setData(p => ({ ...p, confirmPassword: e.target.value }))} style={{ ...inputStyle, paddingRight: 44, borderColor: data.confirmPassword && data.confirmPassword !== data.password ? theme.accent : undefined }} />
-            <button type="button" onClick={() => setData(p => ({ ...p, showPassword: !p.showPassword }))} style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", fontSize:16, color:theme.textLight, padding:0 }}>{data.showPassword ? "🙈" : "👁"}</button>
+            <input type={data.showConfirmPassword ? "text" : "password"} placeholder="Re-enter your password" value={data.confirmPassword || ""} onChange={e => setData(p => ({ ...p, confirmPassword: e.target.value }))} style={{ ...inputStyle, paddingRight: 44, borderColor: data.confirmPassword && data.confirmPassword !== data.password ? theme.accent : undefined }} />
+            <button type="button" onClick={() => setData(p => ({ ...p, showConfirmPassword: !p.showConfirmPassword }))} style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", fontSize:16, color:theme.textLight, padding:0 }}>{data.showConfirmPassword ? "Hide" : "Show"}</button>
           </div>
           {data.confirmPassword && data.confirmPassword !== data.password && <div style={{ fontSize:11, color:theme.accent, marginTop:4 }}>Passwords don't match</div>}
         </div>
@@ -512,14 +515,18 @@ const Onboarding = ({ onFinish, onShowSignIn }) => {
             <button onClick={() => setData(p => ({ ...p, smoker: true }))} style={{ padding:"6px 14px", borderRadius:50, border:`2px solid ${data.smoker ? theme.accent : "rgba(82,183,136,0.2)"}`, background: data.smoker ? theme.accent : "white", color: data.smoker ? "white" : theme.textMid, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Yes</button>
           </div>
         </div>
+        {onboardingError && <div style={{ color:"#e05a5a", fontSize:13, padding:"10px 14px", background:"rgba(224,90,90,0.1)", borderRadius:10, marginBottom:12 }}>{onboardingError}</div>}
         <button onClick={() => {
-          if (!data.name.trim()) { alert("Please enter your first name."); return; }
+          setOnboardingError("");
+          if (!data.name.trim()) { setOnboardingError("Please enter your first name."); return; }
           const age = parseInt(data.age);
-          if (!data.age || isNaN(age) || age < 18 || age > 100) { alert("Please enter a valid age (18–100)."); return; }
-          if (data.postcode && !/^[A-Z]{1,2}/.test(data.postcode.toUpperCase().trim())) { alert("Please enter a valid UK postcode area (e.g. SP, SO, SW1, BH)."); return; }
-          if (!data.email.trim()) { alert("Please enter your email address."); return; }
-          if (!data.password || data.password.length < 6) { alert("Password must be at least 6 characters."); return; }
-          if (data.password !== data.confirmPassword) { alert("Passwords don't match — please check and try again."); return; }
+          if (!data.age || isNaN(age) || age < 18 || age > 100) { setOnboardingError("Please enter a valid age (18–100)."); return; }
+          if (data.postcode && !/^[A-Z]{1,2}/.test(data.postcode.toUpperCase().trim())) { setOnboardingError("Please enter a valid UK postcode area (e.g. SP, SO, SW1, BH)."); return; }
+          if (!data.email.trim()) { setOnboardingError("Please enter your email address."); return; }
+          const pwd = data.password || "";
+          if (pwd.length < 8) { setOnboardingError("Password must be at least 8 characters."); return; }
+          if (!/[a-z]/.test(pwd) || !/[A-Z]/.test(pwd) || !/[0-9]/.test(pwd) || !/[^a-zA-Z0-9]/.test(pwd)) { setOnboardingError("Password must include a lowercase letter, an UPPERCASE letter, a number, and a symbol (e.g. Plant1!)."); return; }
+          if (data.password !== data.confirmPassword) { setOnboardingError("Passwords don't match — please check and try again."); return; }
           setStep(4);
         }} style={{ ...btnPrimary, marginTop: 8 }}>Continue →</button>
       </div>
@@ -593,8 +600,9 @@ const Onboarding = ({ onFinish, onShowSignIn }) => {
             </button>
           ))}
         </div>
-        <button onClick={() => { if (!data.email || !data.password) { alert("Please go back and fill in your email and password."); return; } onFinish(data); }} style={btnPrimary}>Let's go! 🌱</button>
-        <button onClick={() => { if (!data.email || !data.password) { alert("Please go back and fill in your email and password."); return; } onFinish(data); }} style={{ ...btnGhost, marginTop:12 }}>Skip</button>
+        {onboardingError && <div style={{ color:"#e05a5a", fontSize:13, padding:"10px 14px", background:"rgba(224,90,90,0.1)", borderRadius:10, marginBottom:12, textAlign:"center" }}>{onboardingError}</div>}
+        <button onClick={() => { setOnboardingError(""); if (!data.email) { setOnboardingError("Please go back and enter your email address."); return; } const pwd = data.password || ""; if (pwd.length < 8 || !/[a-z]/.test(pwd) || !/[A-Z]/.test(pwd) || !/[0-9]/.test(pwd) || !/[^a-zA-Z0-9]/.test(pwd)) { setOnboardingError("Please go back and check your password meets the requirements (8+ chars, upper, lower, number, symbol)."); return; } if (data.password !== data.confirmPassword) { setOnboardingError("Passwords don't match — please go back and check."); return; } onFinish(data).catch(e => setOnboardingError("Something went wrong: " + e.message)); }} style={btnPrimary}>Let's go! 🌱</button>
+        <button onClick={() => { setOnboardingError(""); if (!data.email) { setOnboardingError("Please go back and enter your email address."); return; } const pwd = data.password || ""; if (pwd.length < 8 || !/[a-z]/.test(pwd) || !/[A-Z]/.test(pwd) || !/[0-9]/.test(pwd) || !/[^a-zA-Z0-9]/.test(pwd)) { setOnboardingError("Please go back and check your password meets the requirements (8+ chars, upper, lower, number, symbol)."); return; } onFinish(data).catch(e => setOnboardingError("Something went wrong: " + e.message)); }} style={{ ...btnGhost, marginTop:12 }}>Skip</button>
       </div>
     ),
   ];
@@ -887,6 +895,7 @@ const SwipeScreen = ({ onNav, isPremium, onUpgrade, onSubscribe, currentUser, li
 
   useEffect(() => {
     const fetchProfiles = async () => {
+      if (!currentUser?.id) { setLoading(false); return; } // wait until session is fully ready
       setLoading(true);
       setProfiles([]); // clear immediately so stale results don't show
 
@@ -894,7 +903,7 @@ const SwipeScreen = ({ onNav, isPremium, onUpgrade, onSubscribe, currentUser, li
       let myInterests = [];
       let myProfile = null;
       if (currentUser?.id) {
-        const { data: myProfileData } = await supabase.from("profiles").select("interests,visible,postcode").eq("id", currentUser.id).maybeSingle();
+        const { data: myProfileData } = await supabase.from("profiles").select("interests,visible,postcode,show_me").eq("id", currentUser.id).maybeSingle();
         myProfile = myProfileData;
         if (myProfile?.visible === false) setProfileVisible(false);
         else setProfileVisible(true);
@@ -915,9 +924,14 @@ const SwipeScreen = ({ onNav, isPremium, onUpgrade, onSubscribe, currentUser, li
       query = query.eq("visible", true);
       if (activeFilters.diet) query = query.eq("diet", activeFilters.diet);
       if (activeFilters.lookingFor) query = query.eq("looking_for", activeFilters.lookingFor);
+      const myShowMe = myProfile?.show_me;
+      if (myShowMe === "Women") query = query.eq("gender", "Woman");
+      else if (myShowMe === "Men") query = query.eq("gender", "Man");
+      // "Everyone" or unset — no gender filter applied
       if (activeFilters.ageMin) query = query.gte("age", parseInt(activeFilters.ageMin));
       if (activeFilters.ageMax) query = query.lte("age", parseInt(activeFilters.ageMax));
-      const effectivePostcode = activeFilters.postcode || (isPremium ? (()=>{ try { return localStorage.getItem("meetfree_custom_location") || ""; } catch(e) { return ""; } })() : "");
+      const savedSearchDistance = (() => { try { return parseInt(localStorage.getItem("meetfree_search_distance") || "9999"); } catch(e) { return 9999; } })();
+      const effectivePostcode = activeFilters.postcode || (isPremium && savedSearchDistance !== 9999 ? (()=>{ try { return localStorage.getItem("meetfree_custom_location") || ""; } catch(e) { return ""; } })() : "");
       if (effectivePostcode) query = query.ilike("postcode", effectivePostcode.toUpperCase() + "%");
       const { data, error } = await query;
       if (error) console.error("Fetch profiles error:", error);
@@ -1723,6 +1737,14 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
   const [contactRevealed, setContactRevealed] = useState(false);
   const [otherReadAt, setOtherReadAt] = useState(null); // when the other person last read the chat
   const [replyingTo, setReplyingTo] = useState(null); // { id, content, senderName }
+  const [hoveredMsgId, setHoveredMsgId] = useState(null);
+  const [swipeMsgId, setSwipeMsgId] = useState(null);
+  const [deleteMenuMsgId, setDeleteMenuMsgId] = useState(null);
+  const [menuAnchor, setMenuAnchor] = useState(null); // {top, left, right, isMe}
+  const [deletingMsg, setDeletingMsg] = useState(false);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const swipeStartX = useRef(null);
+  const SWIPE_THRESHOLD = 60;
 
   // Load messages and poll for new ones every 8 seconds
   useEffect(() => {
@@ -1780,6 +1802,35 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
     prevMsgCount.current = msgs.length;
   }, [msgs]);
 
+  const deleteForMe = async (msgId) => {
+    if (deletingMsg) return;
+    setDeletingMsg(true);
+    try {
+      const msg = msgs.find(m => m.id === msgId);
+      const currentDeletedFor = msg?.deleted_for || [];
+      if (!currentDeletedFor.includes(currentUser.id)) {
+        const updated = [...currentDeletedFor, currentUser.id];
+        const { error } = await supabase.from("messages").update({ deleted_for: updated }).eq("id", msgId);
+        if (error) { console.error("Delete for me DB error:", error); alert("Couldn't delete message: " + error.message); }
+        else setMsgs(prev => prev.map(m => m.id === msgId ? { ...m, deleted_for: updated } : m));
+      }
+    } catch(e) { console.error("Delete for me error:", e); }
+    setDeletingMsg(false);
+    setDeleteMenuMsgId(null);
+  };
+
+  const deleteForEveryone = async (msgId) => {
+    if (deletingMsg) return;
+    setDeletingMsg(true);
+    try {
+      const { error } = await supabase.from("messages").update({ deleted_for_everyone: true }).eq("id", msgId);
+      if (error) { console.error("Delete for everyone DB error:", error); alert("Couldn't delete message: " + error.message); }
+      else setMsgs(prev => prev.map(m => m.id === msgId ? { ...m, deleted_for_everyone: true } : m));
+    } catch(e) { console.error("Delete for everyone error:", e); }
+    setDeletingMsg(false);
+    setDeleteMenuMsgId(null);
+  };
+
   const send = async () => {
     if (!text.trim() || !currentUser || !chat.matchId) return;
     const content = text.trim();
@@ -1792,8 +1843,10 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
     try {
       const { data: senderProfile } = await supabase.from("profiles").select("name").eq("id", currentUser.id).maybeSingle();
       const senderName = senderProfile?.name || "Someone";
-      await supabase.functions.invoke("send-message-email", { body: { matchId: chat.matchId, senderName, recipientId: chat.id, senderId: currentUser.id, messageId: msgData?.id } });
-      await supabase.functions.invoke("send-push-notification", { body: { recipientId: chat.id, title: `💬 New message from ${senderName}`, body: content, url: `https://meetfree.uk?chat=${chat.matchId}` } });
+      const { error: emailErr } = await supabase.functions.invoke("send-message-email", { body: { matchId: chat.matchId, senderName, recipientId: chat.id, senderId: currentUser.id, messageId: msgData?.id } });
+      if (emailErr) console.error("Email notify error:", emailErr);
+      const { error: pushErr } = await supabase.functions.invoke("send-push-notification", { body: { recipientId: chat.id, title: `💬 New message from ${senderName}`, body: content, url: `https://app.meetfree.uk?chat=${chat.matchId}` } });
+      if (pushErr) console.error("Push notify error:", pushErr);
     } catch(e) { console.error("Notify error:", e); }
   };
 
@@ -1845,7 +1898,7 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
             <div style={{ fontSize:11, color:theme.textLight, textAlign:"center", marginTop:4 }}>Tap to use as your opening message</div>
           </div>
         ) : (
-          msgs.map((m, idx) => {
+          msgs.filter(m => !(m.deleted_for || []).includes(currentUser?.id)).map((m, idx) => {
             const isMe = m.sender_id === currentUser?.id;
             const msgDate = m.created_at ? new Date(m.created_at) : null;
             const now = new Date();
@@ -1857,19 +1910,41 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
             const isLastMine = isMe && m.id === myMsgs[myMsgs.length - 1]?.id;
             const isSeen = isMe && otherReadAt && msgDate && otherReadAt > msgDate;
             return (
-              <div key={m.id} style={{ display: "flex", flexDirection: "column", alignItems: isMe ? "flex-end" : "flex-start" }}
-                onTouchStart={() => { const timer = setTimeout(() => { setReplyingTo({ id: m.id, content: m.content, senderName: isMe ? "you" : chat.name }); inputRef.current?.focus(); }, 500); m._replyTimer = timer; }}
-                onTouchEnd={() => { if (m._replyTimer) clearTimeout(m._replyTimer); }}
-                onContextMenu={e => { e.preventDefault(); setReplyingTo({ id: m.id, content: m.content, senderName: isMe ? "you" : chat.name }); inputRef.current?.focus(); }}
+              <div key={m.id} style={{ display: "flex", flexDirection: "column", alignItems: isMe ? "flex-end" : "flex-start", position: "relative" }}
+                onTouchStart={(e) => { swipeStartX.current = e.touches[0].clientX; setSwipeMsgId(m.id); }}
+                onTouchMove={(e) => {
+                  if (swipeStartX.current === null || swipeMsgId !== m.id) return;
+                  const delta = e.touches[0].clientX - swipeStartX.current;
+                  // Swipe right to reply (works for both sent and received messages)
+                  const clamped = Math.max(0, Math.min(delta, 90));
+                  setSwipeOffset(clamped);
+                }}
+                onTouchEnd={() => {
+                  if (swipeMsgId === m.id && swipeOffset > SWIPE_THRESHOLD) {
+                    setReplyingTo({ id: m.id, content: m.content, senderName: isMe ? "you" : chat.name });
+                    inputRef.current?.focus();
+                  }
+                  setSwipeMsgId(null);
+                  setSwipeOffset(0);
+                  swipeStartX.current = null;
+                }}
+                onMouseEnter={() => setHoveredMsgId(m.id)}
+                onMouseLeave={() => setHoveredMsgId(null)}
               >
-                <div style={{ maxWidth: "72%", borderRadius: isMe ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: m.content.startsWith("[img]") ? "transparent" : isMe ? theme.greenDeep : "white", color: isMe ? "white" : theme.textDark, fontSize: 14, lineHeight: 1.5, boxShadow: m.content.startsWith("[img]") ? "none" : "0 2px 8px rgba(26,58,42,0.08)", overflow: "hidden" }}>
+                {swipeMsgId === m.id && swipeOffset > 15 && (
+                  <div style={{ position:"absolute", left: isMe ? "auto" : -40, right: isMe ? -40 : "auto", top:"50%", transform:"translateY(-50%)", width:28, height:28, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, background: swipeOffset > SWIPE_THRESHOLD ? theme.greenBright : "rgba(82,183,136,0.2)", color: swipeOffset > SWIPE_THRESHOLD ? "white" : theme.greenMid, opacity: Math.min(swipeOffset / 30, 1), transition:"background 0.15s, color 0.15s" }}>↩</div>
+                )}
+                <div style={{ display:"flex", alignItems:"center", gap:6, transform: swipeMsgId === m.id ? `translateX(${swipeOffset}px)` : "translateX(0)", transition: swipeMsgId === m.id ? "none" : "transform 0.2s ease-out" }}>
+                  <div onClick={(e) => { if (swipeOffset < 15 && !m.deleted_for_everyone) { if (deleteMenuMsgId === m.id) { setDeleteMenuMsgId(null); setMenuAnchor(null); } else { const r = e.currentTarget.getBoundingClientRect(); setMenuAnchor({ top: r.bottom + 4, right: window.innerWidth - r.right, left: r.left, isMe }); setDeleteMenuMsgId(m.id); } } }} style={{ maxWidth: "72%", borderRadius: isMe ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: m.content.startsWith("[img]") ? "transparent" : isMe ? theme.greenDeep : "white", color: isMe ? "white" : theme.textDark, fontSize: 14, lineHeight: 1.5, boxShadow: m.content.startsWith("[img]") ? "none" : "0 2px 8px rgba(26,58,42,0.08)", overflow: "hidden", cursor: "pointer" }}>
                   {m.reply_to_content && (
                     <div style={{ margin:"8px 8px 0", padding:"6px 10px", borderLeft:`3px solid ${isMe ? "rgba(255,255,255,0.5)" : theme.greenBright}`, background: isMe ? "rgba(255,255,255,0.15)" : "rgba(82,183,136,0.08)", borderRadius:6, fontSize:11, color: isMe ? "rgba(255,255,255,0.8)" : theme.textMid }}>
                       ↩ {m.reply_to_content.startsWith("[img]") ? "📷 Photo" : m.reply_to_content.slice(0, 60) + (m.reply_to_content.length > 60 ? "…" : "")}
                     </div>
                   )}
                   <div style={{ padding: m.content.startsWith("[img]") ? 0 : "10px 14px" }}>
-                    {m.content.startsWith("[img]") && m.content.endsWith("[/img]")
+                    {m.deleted_for_everyone
+                      ? <span style={{ fontStyle:"italic", color: isMe ? "rgba(255,255,255,0.6)" : theme.textLight, fontSize:13 }}>🚫 This message was deleted</span>
+                      : m.content.startsWith("[img]") && m.content.endsWith("[/img]")
                       ? <img src={m.content.slice(5, -6)} alt="shared" style={{ maxWidth: "220px", maxHeight: "220px", borderRadius: 14, display: "block", objectFit: "cover" }} />
                       : m.content
                     }
@@ -1882,6 +1957,22 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
                       {isSeen && isLastMine && <div style={{ fontSize:11, color:"#00ffaa", fontWeight:700, lineHeight:1 }}>Seen</div>}
                     </div>
                   )}
+                </div>
+                {!isMe && !m.deleted_for_everyone && (
+                  <button onClick={() => { setReplyingTo({ id: m.id, content: m.content, senderName: chat.name }); inputRef.current?.focus(); }} title="Reply" style={{ background:"rgba(82,183,136,0.12)", border:"none", borderRadius:"50%", width:26, height:26, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:13, color:theme.greenMid, flexShrink:0, opacity: hoveredMsgId === m.id ? 1 : 0, pointerEvents: hoveredMsgId === m.id ? "auto" : "none", transition:"opacity 0.15s" }}>↩</button>
+                )}
+                {!m.deleted_for_everyone && (
+                  <button onClick={(e) => { if (deleteMenuMsgId === m.id) { setDeleteMenuMsgId(null); setMenuAnchor(null); } else { const r = e.currentTarget.getBoundingClientRect(); setMenuAnchor({ top: r.bottom + 4, right: window.innerWidth - r.right, left: r.left, isMe }); setDeleteMenuMsgId(m.id); } }} title="More options" style={{ background:"rgba(82,183,136,0.12)", border:"none", borderRadius:"50%", width:26, height:26, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:13, color:theme.greenMid, flexShrink:0, opacity: (hoveredMsgId === m.id || deleteMenuMsgId === m.id) ? 1 : 0, transition:"opacity 0.15s" }}>⋯</button>
+                )}
+                {deleteMenuMsgId === m.id && menuAnchor && (
+                  <>
+                    <div onClick={() => { setDeleteMenuMsgId(null); setMenuAnchor(null); }} style={{ position:"fixed", inset:0, zIndex:998, background:"transparent" }} />
+                    <div style={{ position:"fixed", top: menuAnchor.top, right: menuAnchor.isMe ? menuAnchor.right : "auto", left: menuAnchor.isMe ? "auto" : menuAnchor.left, background:"white", borderRadius:12, boxShadow:"0 4px 16px rgba(26,58,42,0.18)", zIndex:999, minWidth:160, overflow:"hidden" }}>
+                      <button onClick={() => { deleteForMe(m.id); setMenuAnchor(null); }} style={{ display:"block", width:"100%", textAlign:"left", padding:"10px 16px", background:"white", border:"none", cursor:"pointer", fontSize:13, color:theme.textDark, fontFamily:"'DM Sans',sans-serif" }}>🗑 Delete for me</button>
+                      {isMe && <button onClick={() => { deleteForEveryone(m.id); setMenuAnchor(null); }} style={{ display:"block", width:"100%", textAlign:"left", padding:"10px 16px", background:"white", border:"none", borderTop:"1px solid rgba(82,183,136,0.1)", cursor:"pointer", fontSize:13, color:"#e05a5a", fontFamily:"'DM Sans',sans-serif" }}>🗑 Delete for everyone</button>}
+                    </div>
+                  </>
+                )}
                 </div>
                 {!isMe && time && (
                   <div style={{ display:"flex", alignItems:"center", gap:4, marginTop:3, marginBottom:4, paddingLeft:4 }}>
@@ -2229,6 +2320,8 @@ const ProfileScreen = ({ onNav, isPremium, onUpgrade, currentUser, onLogout, unr
       city: editData.city,
       postcode: editData.postcode ? editData.postcode.toUpperCase() : "",
       looking_for: editData.looking_for || "",
+      gender: editData.gender || "",
+      show_me: editData.show_me || "Everyone",
       bio: editData.bio?.slice(0, 300) || "",
       smoker: editData.smoker || false,
       diet: editData.diet || "Vegan",
@@ -2369,6 +2462,23 @@ const ProfileScreen = ({ onNav, isPremium, onUpgrade, currentUser, onLogout, unr
           <select value={editData.looking_for || ""} onChange={e => setEditData(p => ({...p, looking_for:e.target.value}))} style={{ width:"100%", padding:"12px 16px", borderRadius:12, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:"none", boxSizing:"border-box", background:"white" }}>
             <option value="">Select...</option>
             {["Dating","Friendship","Community","Activity partner"].map(o => <option key={o} value={o}>{o}</option>)}
+          </select>
+        </div>
+        <div style={{ marginBottom:16 }}>
+          <label style={{ fontSize:12, fontWeight:600, color:theme.textMid, textTransform:"uppercase", letterSpacing:"0.05em", display:"block", marginBottom:6 }}>I am <span style={{ textTransform:"none", fontWeight:400, color:theme.textLight }}>(optional)</span></label>
+          <select value={editData.gender || ""} onChange={e => setEditData(p => ({...p, gender:e.target.value}))} style={{ width:"100%", padding:"12px 16px", borderRadius:12, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:"none", boxSizing:"border-box", background:"white" }}>
+            <option value="">Prefer not to say</option>
+            <option value="Woman">Woman</option>
+            <option value="Man">Man</option>
+            <option value="Non-binary">Non-binary</option>
+          </select>
+        </div>
+        <div style={{ marginBottom:16 }}>
+          <label style={{ fontSize:12, fontWeight:600, color:theme.textMid, textTransform:"uppercase", letterSpacing:"0.05em", display:"block", marginBottom:6 }}>Show me <span style={{ textTransform:"none", fontWeight:400, color:theme.textLight }}>(optional)</span></label>
+          <select value={editData.show_me || "Everyone"} onChange={e => setEditData(p => ({...p, show_me:e.target.value}))} style={{ width:"100%", padding:"12px 16px", borderRadius:12, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:"none", boxSizing:"border-box", background:"white" }}>
+            <option value="Everyone">Everyone</option>
+            <option value="Women">Women</option>
+            <option value="Men">Men</option>
           </select>
         </div>
                 <div style={{ marginBottom:16, display:"flex", justifyContent:"space-between", alignItems:"center", background:"rgba(82,183,136,0.06)", borderRadius:12, padding:"12px 16px" }}>
@@ -2683,8 +2793,7 @@ const SettingsScreen = ({ onNav, onLogout, onDeleteAccount, isPremium, onUpgrade
           <div style={sectionLabel}>Discovery</div>
           <div style={{ background: "white", borderRadius: 14, overflow: "hidden", border: "1px solid rgba(82,183,136,0.1)" }}>
             <Row label="Show my profile" sub={profileVisible ? "Your profile is visible in Discover" : "Your profile is hidden from Discover"} right={<Toggle on={profileVisible} toggle={toggleProfileVisible} />} />
-            {isPremium && <Row label="Change location" sub={customLocation ? `Browsing from: ${customLocation}` : "Browse profiles in any area"} right={<span style={{ color: theme.textLight }}>›</span>} onPress={() => setShowChangeLocation(true)} />}
-            {isPremium && <Row label="Search distance" sub={searchDistance === 9999 ? "Nationwide" : `Within ${searchDistance} miles`} right={<span style={{ color: theme.textLight }}>›</span>} onPress={() => setShowDistancePicker(true)} />}
+            {isPremium && <Row label="Search area" sub={customLocation ? `From ${customLocation} · ${searchDistance === 9999 ? "Nationwide" : `Within ${searchDistance} miles`}` : searchDistance === 9999 ? "Nationwide" : `Within ${searchDistance} miles`} right={<span style={{ color: theme.textLight }}>›</span>} onPress={() => setShowChangeLocation(true)} />}
           </div>
         </div>
         <div style={{ margin: "4px 18px 8px" }}>
@@ -2742,29 +2851,21 @@ const SettingsScreen = ({ onNav, onLogout, onDeleteAccount, isPremium, onUpgrade
       {showChangeLocation && (
         <div style={{ position:"absolute", inset:0, zIndex:250, background:"rgba(26,58,42,0.7)", borderRadius:44, display:"flex", flexDirection:"column", justifyContent:"flex-end" }}>
           <div style={{ background:"#fdfaf5", borderRadius:"24px 24px 0 0", padding:"24px 20px 32px" }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
-              <div style={{ fontFamily:"Georgia,serif", fontSize:18, fontWeight:700, color:theme.greenDeep }}>📍 Change location</div>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+              <div style={{ fontFamily:"Georgia,serif", fontSize:18, fontWeight:700, color:theme.greenDeep }}>📍 Search area</div>
               <button onClick={() => setShowChangeLocation(false)} style={{ background:"none", border:"none", fontSize:20, cursor:"pointer", color:theme.textLight }}>✕</button>
             </div>
-            <p style={{ fontSize:13, color:theme.textMid, marginBottom:16, lineHeight:1.6 }}>Enter a postcode prefix to browse profiles in a different area. Leave blank to use your own location.</p>
-            <input autoFocus type="text" placeholder="e.g. SW1, M1, B1" value={customLocation} onChange={e => setCustomLocation(e.target.value.toUpperCase())} onKeyDown={e => { if (e.key === "Enter") { try { if (customLocation) localStorage.setItem("meetfree_custom_location", customLocation); else localStorage.removeItem("meetfree_custom_location"); } catch(e) {} setShowChangeLocation(false); window.dispatchEvent(new Event("meetfree_location_changed")); } }} style={{ width:"100%", padding:"12px 16px", borderRadius:12, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:"none", boxSizing:"border-box", marginBottom:16 }} />
-            <button onClick={() => { try { if (customLocation) localStorage.setItem("meetfree_custom_location", customLocation); else localStorage.removeItem("meetfree_custom_location"); } catch(e) {} setShowChangeLocation(false); window.dispatchEvent(new Event("meetfree_location_changed")); }} style={{ ...btnPrimary }}>Save location</button>
-            {customLocation && <button onClick={() => { setCustomLocation(""); try { localStorage.removeItem("meetfree_custom_location"); } catch(e) {} setShowChangeLocation(false); window.dispatchEvent(new Event("meetfree_location_changed")); }} style={{ ...btnGhost, marginTop:8 }}>Reset to my location</button>}
-          </div>
-        </div>
-      )}
-      {showDistancePicker && (
-        <div style={{ position:"absolute", inset:0, zIndex:250, background:"rgba(26,58,42,0.7)", borderRadius:44, display:"flex", flexDirection:"column", justifyContent:"flex-end" }}>
-          <div style={{ background:"#fdfaf5", borderRadius:"24px 24px 0 0", padding:"24px 20px 32px" }}>
-            <div style={{ fontFamily:"Georgia,serif", fontSize:18, fontWeight:700, color:theme.greenDeep, marginBottom:6 }}>📍 Search distance</div>
-            <div style={{ fontSize:13, color:theme.textMid, marginBottom:20 }}>Show profiles within this distance of your location</div>
+            <p style={{ fontSize:13, color:theme.textMid, marginBottom:16, lineHeight:1.6 }}>Browse from a different location, or leave blank to use your own postcode, then choose your search distance below.</p>
+            <input autoFocus type="text" placeholder="e.g. SW1, M1, B1 (or leave blank)" value={customLocation} onChange={e => setCustomLocation(e.target.value.toUpperCase())} onKeyDown={e => { if (e.key === "Enter") { try { if (customLocation) localStorage.setItem("meetfree_custom_location", customLocation); else localStorage.removeItem("meetfree_custom_location"); } catch(e) {} } }} style={{ width:"100%", padding:"12px 16px", borderRadius:12, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:"none", boxSizing:"border-box", marginBottom:20 }} />
+            <div style={{ fontSize:13, color:theme.textMid, marginBottom:10 }}>How far should we search?</div>
             {[25, 50, 100, 9999].map(d => (
-              <button key={d} onClick={() => { setSearchDistance(d); try { localStorage.setItem("meetfree_search_distance", String(d)); } catch(e) {} setShowDistancePicker(false); window.dispatchEvent(new Event("meetfree_location_changed")); }} style={{ width:"100%", padding:"14px 16px", marginBottom:8, borderRadius:12, border:`2px solid ${searchDistance === d ? theme.greenBright : "rgba(82,183,136,0.2)"}`, background: searchDistance === d ? "rgba(82,183,136,0.1)" : "white", color: searchDistance === d ? theme.greenDeep : theme.textDark, fontFamily:"'DM Sans',sans-serif", fontSize:15, fontWeight: searchDistance === d ? 700 : 400, cursor:"pointer", textAlign:"left" }}>
-                {d === 9999 ? "🌍 Nationwide" : `📍 Within ${d} miles`}
+              <button key={d} onClick={() => { setSearchDistance(d); try { localStorage.setItem("meetfree_search_distance", String(d)); } catch(e) {} }} style={{ width:"100%", padding:"12px 16px", marginBottom:8, borderRadius:12, border:`2px solid ${searchDistance === d ? theme.greenBright : "rgba(82,183,136,0.2)"}`, background: searchDistance === d ? "rgba(82,183,136,0.1)" : "white", color: searchDistance === d ? theme.greenDeep : theme.textDark, fontFamily:"'DM Sans',sans-serif", fontSize:14, fontWeight: searchDistance === d ? 700 : 400, cursor:"pointer", textAlign:"left" }}>
+                {d === 9999 ? "🌍 Nationwide" : `${d} miles`}
                 {searchDistance === d && <span style={{ float:"right", color:theme.greenBright }}>✓</span>}
               </button>
             ))}
-            <button onClick={() => setShowDistancePicker(false)} style={{ ...btnGhost, marginTop:4 }}>Cancel</button>
+            <button onClick={() => { try { if (customLocation) localStorage.setItem("meetfree_custom_location", customLocation); else localStorage.removeItem("meetfree_custom_location"); } catch(e) {} setShowChangeLocation(false); window.dispatchEvent(new Event("meetfree_location_changed")); }} style={{ ...btnPrimary, marginTop:8 }}>Save</button>
+            {customLocation && <button onClick={() => { setCustomLocation(""); try { localStorage.removeItem("meetfree_custom_location"); } catch(e) {} setShowChangeLocation(false); window.dispatchEvent(new Event("meetfree_location_changed")); }} style={{ ...btnGhost, marginTop:8 }}>Reset to my location</button>}
           </div>
         </div>
       )}
@@ -2784,11 +2885,11 @@ const SettingsScreen = ({ onNav, onLogout, onDeleteAccount, isPremium, onUpgrade
               <>
                 <div style={{ position:"relative", marginBottom:12 }}>
                   <input key={showPw ? "cp1-text" : "cp1-pw"} type={showPw ? "text" : "password"} placeholder="New password (min 6 characters)" value={newPassword} onChange={e => setNewPassword(e.target.value)} style={{ width:"100%", padding:"12px 44px 12px 16px", borderRadius:12, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:"none", boxSizing:"border-box" }} />
-                  <button type="button" onClick={() => setShowPw(p => !p)} style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", fontSize:16, color:theme.textLight, padding:0 }}>{showPw ? "🙈" : "👁"}</button>
+                  <button type="button" onClick={() => setShowPw(p => !p)} style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", fontSize:16, color:theme.textLight, padding:0 }}>{showPw ? "Hide" : "Show"}</button>
                 </div>
                 <div style={{ position:"relative", marginBottom:12 }}>
                   <input key={showPw ? "cp2-text" : "cp2-pw"} type={showPw ? "text" : "password"} placeholder="Confirm new password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && handleChangePassword()} style={{ width:"100%", padding:"12px 44px 12px 16px", borderRadius:12, border:`2px solid ${confirmPassword && confirmPassword !== newPassword ? theme.accent : "rgba(82,183,136,0.2)"}`, fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:"none", boxSizing:"border-box" }} />
-                  <button type="button" onClick={() => setShowPw(p => !p)} style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", fontSize:16, color:theme.textLight, padding:0 }}>{showPw ? "🙈" : "👁"}</button>
+                  <button type="button" onClick={() => setShowPw(p => !p)} style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", fontSize:16, color:theme.textLight, padding:0 }}>{showPw ? "Hide" : "Show"}</button>
                 </div>
                 {confirmPassword && confirmPassword !== newPassword && <div style={{ fontSize:11, color:theme.accent, marginBottom:8 }}>Passwords don't match</div>}
                 {passwordError && <div style={{ color:theme.accent, fontSize:13, marginBottom:12, padding:"8px 12px", background:"rgba(224,122,95,0.08)", borderRadius:8 }}>{passwordError}</div>}
@@ -2964,7 +3065,8 @@ const PasswordResetScreen = ({ onDone }) => {
   const [showPw, setShowPw] = useState(false);
   const handleReset = async () => {
     setError("");
-    if (!password || password.length < 6) { setError("Password must be at least 6 characters."); return; }
+    const pwdCheck = password || "";
+    if (pwdCheck.length < 8 || !/[a-z]/.test(pwdCheck) || !/[A-Z]/.test(pwdCheck) || !/[0-9]/.test(pwdCheck) || !/[^a-zA-Z0-9]/.test(pwdCheck)) { setError("Password must be 8+ characters with a lowercase letter, an UPPERCASE letter, a number, and a symbol."); return; }
     if (password !== confirm) { setError("Passwords do not match."); return; }
     setLoading(true);
     const { error: updateError } = await supabase.auth.updateUser({ password });
@@ -2998,11 +3100,11 @@ const PasswordResetScreen = ({ onDone }) => {
             <p style={{ color:theme.textMid, fontSize:14, marginBottom:24, lineHeight:1.6 }}>Enter a new password for your MeetFree account.</p>
             <div style={{ width:"100%", marginBottom:14, position:"relative" }}>
               <input key={showPw ? "rp1-text" : "rp1-pw"} type={showPw ? "text" : "password"} placeholder="New password (min 6 characters)" autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} style={{ ...inputStyle, textAlign:"left", paddingRight:44 }} />
-              <button type="button" onClick={() => setShowPw(p => !p)} style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", fontSize:16, color:theme.textLight, padding:0 }}>{showPw ? "🙈" : "👁"}</button>
+              <button type="button" onClick={() => setShowPw(p => !p)} style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", fontSize:16, color:theme.textLight, padding:0 }}>{showPw ? "Hide" : "Show"}</button>
             </div>
             <div style={{ width:"100%", marginBottom:16, position:"relative" }}>
               <input key={showPw ? "rp2-text" : "rp2-pw"} type={showPw ? "text" : "password"} placeholder="Confirm new password" autoComplete="new-password" value={confirm} onChange={e => setConfirm(e.target.value)} onKeyDown={e => e.key === "Enter" && handleReset()} style={{ ...inputStyle, textAlign:"left", paddingRight:44 }} />
-              <button type="button" onClick={() => setShowPw(p => !p)} style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", fontSize:16, color:theme.textLight, padding:0 }}>{showPw ? "🙈" : "👁"}</button>
+              <button type="button" onClick={() => setShowPw(p => !p)} style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", fontSize:16, color:theme.textLight, padding:0 }}>{showPw ? "Hide" : "Show"}</button>
             </div>
             {error && <div style={{ color:theme.accent, fontSize:13, marginBottom:12, padding:"8px 12px", background:"rgba(224,122,95,0.08)", borderRadius:8, width:"100%" }}>{error}</div>}
             <button onClick={handleReset} disabled={loading} style={{ ...btnPrimary, opacity: loading ? 0.7 : 1 }}>
@@ -3037,7 +3139,9 @@ export default function App() {
     if (ios) { setIsIOS(true); setTimeout(() => setShowInstallBanner(true), 4000); }
   }, []);
   const [screen, setScreen] = useState("onboarding");
-  const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(() => {
+    try { return new URLSearchParams(window.location.search).get("signin") === "1"; } catch(e) { return false; }
+  });
   const [pendingChatMessage, setPendingChatMessage] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [activeChat, setActiveChat] = useState(null);
@@ -3111,7 +3215,9 @@ export default function App() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { alert("Please sign in again before deleting your account."); return; }
-      const { error } = await supabase.functions.invoke("delete-account");
+      const { error } = await supabase.functions.invoke("delete-account", {
+        headers: { Authorization: `Bearer ${session.access_token}` }
+      });
       if (error) { alert("Delete failed: " + error.message + "\n\nEmail hello@meetfree.uk for manual deletion."); return; }
       setCurrentUser(null); setLikedProfiles({}); setPassedProfilesDB({}); setBlockedUsers({});
       setActiveChat(null); setIsPremium(false); setUnreadCount(0); setScreen("onboarding");
@@ -3203,6 +3309,7 @@ export default function App() {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: profileData.email,
         password: profileData.password,
+        options: { emailRedirectTo: "https://app.meetfree.uk?signin=1" },
       });
       if (authError) { setSignupError("Signup failed: " + authError.message); return; }
 
@@ -3218,6 +3325,7 @@ export default function App() {
         interests: profileData.interests,
         bio: profileData.bio?.slice(0, 300) || "",
         referral_source: profileData.referralSource || null,
+        is_real: true,
       });
       if (profileError) console.error("Profile insert error:", profileError);
 
@@ -3346,7 +3454,7 @@ export default function App() {
               <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"2rem", textAlign:"center" }}>
                 <div style={{ fontSize:64, marginBottom:16 }}>📧</div>
                 <h2 style={{ fontFamily:"Georgia,serif", fontSize:26, color:theme.greenDeep, marginBottom:8 }}>Check your inbox</h2>
-                <p style={{ color:theme.textMid, fontSize:14, lineHeight:1.7, marginBottom:24 }}>We've sent a verification link to your email. Click it to activate your account and start connecting.</p>
+                <p style={{ color:theme.textMid, fontSize:14, lineHeight:1.7, marginBottom:24 }}>We've sent a verification link to your email. Tap it, then close that tab and come back here to sign in.</p>
                 <button onClick={() => { setAwaitingVerification(false); setScreen("onboarding"); }} style={btnGhost}>Back to sign in</button>
               </div>
             </PhoneShell>
@@ -3360,10 +3468,10 @@ export default function App() {
           <div style={{ fontSize:14, color:"rgba(255,255,255,0.75)", textAlign:"center", maxWidth:280 }}>This may take a few seconds — please don't close the app</div>
         </div>
       )}
-      {screen === "onboarding" && <Onboarding onShowSignIn={() => setShowSignIn(true)} onFinish={handleSignup} />}
+      {screen === "onboarding" && <Onboarding onShowSignIn={() => setShowSignIn(true)} onFinish={handleSignup} onClearSignupError={() => setSignupError("")} />}
             {screen === "swipe" && <SwipeScreen onNav={handleNav} isPremium={isPremium} onUpgrade={handleUpgrade} onSubscribe={handleSubscribe} currentUser={currentUser} likedProfiles={likedProfiles} setLikedProfiles={setLikedProfiles} unreadCount={unreadCount} onLogout={handleSignOut} onOpenChat={c => setActiveChat(c)} />}
             {(screen === "chat" || screen === "liked" || screen === "likedyou") && !activeChat && <ChatList onNav={handleNav} onOpenChat={c => setActiveChat(c)} isPremium={isPremium} onUpgrade={handleUpgrade} currentUser={currentUser} onLogout={handleSignOut} defaultTab={screen === "liked" ? "liked" : screen === "likedyou" ? "likedyou" : "matches"} />}
-            {(screen === "chat" || screen === "liked" || screen === "likedyou") && activeChat && <ChatDetail chat={activeChat} onBack={() => { setActiveChat(null); }} onNav={handleNav} isPremium={isPremium} currentUser={currentUser} />}
+            {(screen === "chat" || screen === "liked" || screen === "likedyou") && activeChat && <ChatDetail key={activeChat.matchId} chat={activeChat} onBack={() => { setActiveChat(null); }} onNav={handleNav} isPremium={isPremium} currentUser={currentUser} />}
             {screen === "profile" && <ProfileScreen onNav={handleNav} unreadCount={unreadCount} isPremium={isPremium} onUpgrade={handleUpgrade} currentUser={currentUser} onLogout={handleSignOut} />}
             {screen === "settings" && <SettingsScreen onNav={handleNav} unreadCount={unreadCount} onLogout={handleSignOut} isPremium={isPremium} onUpgrade={handleUpgrade} onDeleteAccount={handleDeleteAccount} currentUser={currentUser} />}
           {screen === "privacy" && (

@@ -9,13 +9,22 @@
   },
   "keywords": [],
   "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-scripts": "5.0.1",
-    "@supabase/supabase-js": "^2.39.0"
+    "react-scripts": "5.0.1"
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
-    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
-  }
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "homepage": "/"
 }

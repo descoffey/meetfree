@@ -48,7 +48,7 @@ serve(async (req) => {
           <p style="color:#4a7c59;font-size:16px;">Hi ${recipient.name},</p>
           <p style="color:#4a7c59;font-size:16px;"><strong>${requesterName}</strong> would like to share contact details with you on MeetFree.</p>
           <p style="color:#4a7c59;font-size:16px;">Log in to accept or decline — it's completely your choice and you're never obligated to share anything you're not comfortable with. 🌿</p>
-          <a href="https://meetfree.uk?chat=${matchId}" style="display:inline-block;margin-top:16px;padding:12px 28px;background:#52b788;color:white;border-radius:50px;text-decoration:none;font-weight:700;font-size:15px;">View request 🌱</a>
+          <a href="https://app.meetfree.uk?chat=${matchId}" style="display:inline-block;margin-top:16px;padding:12px 28px;background:#52b788;color:white;border-radius:50px;text-decoration:none;font-weight:700;font-size:15px;">View request 🌱</a>
           <p style="color:#aaa;font-size:12px;margin-top:32px;">Questions? Email hello@meetfree.uk</p>
         </div>
       `,
