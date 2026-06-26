@@ -2674,6 +2674,7 @@ const ProfileScreen = ({ onNav, isPremium, onUpgrade, currentUser, onLogout, unr
 
 const SettingsScreen = ({ onNav, onLogout, onDeleteAccount, isPremium, onUpgrade, unreadCount = 0, currentUser }) => {
   const [notifs, setNotifs] = useState(false);
+  const [showPrivacyInfo, setShowPrivacyInfo] = useState(false);
   const VAPID_PUBLIC_KEY = "BE8wDhmjv5Ahta8yM2HkMowLQ6Ul6cvzgGoGjZ3jKO6Wj72EUZhLgJh9Z_4usJmVTE2vxMaT3aZ8r_cVacmCGbE";
 
   const urlBase64ToUint8Array = (base64String) => {
@@ -2808,6 +2809,7 @@ const SettingsScreen = ({ onNav, onLogout, onDeleteAccount, isPremium, onUpgrade
           <div style={sectionLabel}>Account</div>
           <div style={{ background: "white", borderRadius: 14, overflow: "hidden", border: "1px solid rgba(82,183,136,0.1)" }}>
             <Row label="Change password" right={<span style={{ color: theme.textLight }}>›</span>} onPress={() => setShowChangePassword(true)} />
+            <Row label="🔒 Your privacy" right={<span style={{ color: theme.textLight }}>›</span>} onPress={() => setShowPrivacyInfo(true)} />
             <Row label="Privacy policy" right={<span style={{ color: theme.textLight }}>›</span>} onPress={() => onNav("privacy")} />
             <Row label="Terms of service" right={<span style={{ color: theme.textLight }}>›</span>} onPress={() => onNav("terms")} />
             <Row label="Block & report" right={<span style={{ color: theme.textLight }}>›</span>} onPress={() => onNav("block")} />
@@ -2901,6 +2903,7 @@ const SettingsScreen = ({ onNav, onLogout, onDeleteAccount, isPremium, onUpgrade
           </div>
         </div>
       )}
+      {showPrivacyInfo && <PrivacyInfoOverlay onClose={() => setShowPrivacyInfo(false)} />}
       <BottomNav active="settings" onNav={onNav} isPremium={isPremium} unreadCount={unreadCount} />
     </PhoneShell>
   );
@@ -2935,6 +2938,36 @@ const SafetyTipsOverlay = ({ onClose }) => (
         <a href="https://www.nationaldahelpline.org.uk" target="_blank" rel="noopener noreferrer" style={{ display:"block", fontSize:13, color:theme.greenMid, fontWeight:600, marginBottom:4 }}>🔗 National DA Helpline — 0808 2000 247</a>
         <a href="tel:999" style={{ display:"block", fontSize:13, color:theme.accent, fontWeight:700 }}>🚨 Emergency — call 999</a>
       </div>
+      <button onClick={onClose} style={{ width:"100%", padding:"14px", background:theme.greenBright, color:"white", border:"none", borderRadius:50, fontWeight:700, fontSize:15, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>Got it 🌱</button>
+    </div>
+  </div>
+);
+
+// ─── PRIVACY INFO OVERLAY ─────────────────────────────────────────────────────
+
+const PrivacyInfoOverlay = ({ onClose }) => (
+  <div style={{ position:"absolute", inset:0, zIndex:300, background:"rgba(26,58,42,0.7)", borderRadius:44, display:"flex", flexDirection:"column", justifyContent:"flex-end" }}>
+    <div style={{ background:"#fdfaf5", borderRadius:"24px 24px 0 0", padding:"24px 20px 32px", maxHeight:"85%", overflowY:"auto" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+        <div style={{ fontFamily:"Georgia,serif", fontSize:20, fontWeight:700, color:theme.greenDeep }}>🔒 Your Privacy</div>
+        <button onClick={onClose} style={{ background:"none", border:"none", fontSize:22, cursor:"pointer", color:theme.textLight }}>✕</button>
+      </div>
+      <div style={{ fontSize:13, color:theme.textMid, lineHeight:1.6, marginBottom:20 }}>We know putting yourself out there takes courage, so here's exactly what we do — and don't do — with your details.</div>
+      {[
+        { icon:"📧", title:"Your email stays private", body:"We never show your email to other members — not on your profile, not in chat, not anywhere. It's only ever used to log you in and send you notifications." },
+        { icon:"🤝", title:"Nothing is shared unless you choose to", body:"Sharing a phone number happens only when both people agree to it. It's never automatic, and you can decline at any time." },
+        { icon:"🎛", title:"You decide how much to reveal", body:"Gender, search distance, even your name on your profile — it's all in your control. Nothing beyond the basics is required to get matching." },
+        { icon:"✅", title:"Real people, properly checked", body:"Every profile goes through our verification steps. Reporting or blocking someone takes one tap, any time, no explanation needed." },
+      ].map(({ icon, title, body }) => (
+        <div key={title} style={{ marginBottom:16, padding:"14px 16px", background:"white", borderRadius:14, border:"1px solid rgba(82,183,136,0.12)" }}>
+          <div style={{ fontSize:15, fontWeight:700, color:theme.greenDeep, marginBottom:4 }}>{icon} {title}</div>
+          <div style={{ fontSize:13, color:theme.textMid, lineHeight:1.6 }}>{body}</div>
+        </div>
+      ))}
+      <div style={{ marginBottom:16, padding:"14px 16px", background:"rgba(82,183,136,0.06)", borderRadius:14, border:"1px solid rgba(82,183,136,0.2)" }}>
+        <div style={{ fontSize:13, color:theme.textMid, lineHeight:1.6 }}>Want to feel extra cautious while you get to know someone? That's completely normal — take your time before sharing contact details, and use our in-chat safety prompts whenever you're ready to take things further.</div>
+      </div>
+      <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ display:"block", textAlign:"center", fontSize:13, color:theme.greenMid, fontWeight:600, marginBottom:16 }}>Read our full Privacy Policy →</a>
       <button onClick={onClose} style={{ width:"100%", padding:"14px", background:theme.greenBright, color:"white", border:"none", borderRadius:50, fontWeight:700, fontSize:15, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>Got it 🌱</button>
     </div>
   </div>
