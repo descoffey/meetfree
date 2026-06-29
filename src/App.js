@@ -1873,7 +1873,7 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
         </div>
         <div style={{ position: "relative", display:"flex", alignItems:"center", gap:6 }}>
           <button onClick={() => setShowSafetyTips(true)} title="Safety tips" style={{ ...iconBtn, fontSize:18, color:"#c0392b" }}>⚠️</button>
-          <button onClick={() => setShowMenu(m => !m)} style={iconBtn}>⋯</button>
+          <button onClick={() => setShowMenu(m => !m)} title="Notes, unmatch & report" style={iconBtn}>⋯</button>
           {showMenu && (
             <>
               <div style={{ position:"fixed", inset:0, zIndex:2 }} onClick={() => setShowMenu(false)} />
