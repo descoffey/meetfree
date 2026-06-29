@@ -73,6 +73,7 @@ const Paywall = ({ onClose, onSubscribe, trigger = "generic", currentUser }) => 
     swipes:   { icon: "💚", title: "You're out of daily likes!", sub: "Free members get 5 likes per day. Upgrade for unlimited." },
     wholiked: { icon: "👀", title: "See who liked you", sub: "12 people have already liked your profile. Find out who!" },
     rewind:   { icon: "↩️", title: "Oops! Undo that swipe", sub: "Upgrade to rewind your last swipe anytime." },
+    notes:    { icon: "📝", title: "Keep private notes", sub: "Jot down anything you want to remember about a match — only you can ever see it." },
     generic:  { icon: "👑", title: "Upgrade to MeetFree Gold", sub: "Get the most out of your plant-based dating journey." },
   };
   const msg = triggerMessages[trigger] || triggerMessages.generic;
@@ -91,6 +92,7 @@ const Paywall = ({ onClose, onSubscribe, trigger = "generic", currentUser }) => 
     { label: "🔍 Advanced filters", desc: "Filter by interests, postcode, age and more" },
     { label: "🚫 No ads, ever", desc: "A clean, ad-free experience throughout" },
     { label: "📍 Change location", desc: "Browse profiles in any UK city, not just yours" },
+    { label: "📝 Private notes", desc: "Keep your own private notes on each match — never visible to anyone but you" },
   ];
 
   return (
@@ -1721,7 +1723,7 @@ const ChatList = ({ onNav, onOpenChat, isPremium, onUpgrade, currentUser, onLogo
 
 // ─── CHAT DETAIL ──────────────────────────────────────────────────────────────
 
-const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount = 0 }) => {
+const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount = 0, onUpgrade }) => {
   const [msgs, setMsgs] = useState([]);
   const [text, setText] = useState("");
   const [showSafetyPrompt, setShowSafetyPrompt] = useState(false);
@@ -1733,6 +1735,7 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
   const [loading, setLoading] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
   const [showSafetyTips, setShowSafetyTips] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
   const bottomRef = useRef(null);
   const [contactRequest, setContactRequest] = useState(null); // {id, status, requester_id, recipient_id}
   const [contactRevealed, setContactRevealed] = useState(false);
@@ -1875,6 +1878,7 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
             <>
               <div style={{ position:"fixed", inset:0, zIndex:2 }} onClick={() => setShowMenu(false)} />
               <div style={{ position:"absolute", right:0, top:42, background:"white", borderRadius:12, boxShadow:"0 8px 24px rgba(0,0,0,0.12)", border:"1px solid rgba(82,183,136,0.15)", zIndex:10, minWidth:140, overflow:"hidden" }}>
+                <button onClick={() => { setShowMenu(false); if (isPremium) setShowNotes(true); else onUpgrade?.(); }} style={{ display:"block", width:"100%", padding:"12px 16px", background:"none", border:"none", textAlign:"left", fontSize:14, color:theme.textMid, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>📝 Notes{!isPremium && <span style={{ marginLeft:6, fontSize:10, fontWeight:700, color:"#d4a017" }}>GOLD</span>}</button>
                 <button onClick={() => { setShowMenu(false); handleUnmatch(); }} style={{ display:"block", width:"100%", padding:"12px 16px", background:"none", border:"none", textAlign:"left", fontSize:14, color:theme.accent, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>Unmatch</button>
                 <button onClick={() => { setShowMenu(false); onNav("block"); }} style={{ display:"block", width:"100%", padding:"12px 16px", background:"none", border:"none", textAlign:"left", fontSize:14, color:theme.textMid, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>Report</button>
               </div>
@@ -2120,6 +2124,7 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
       </div>
       {(!inputFocused || !isActualMobile) && <BottomNav active="chat" onNav={(screen) => { if (screen === "chat") onBack(); else onNav(screen); }} isPremium={isPremium} unreadCount={unreadCount} />}
       {showSafetyTips && <SafetyTipsOverlay onClose={() => setShowSafetyTips(false)} />}
+      {showNotes && <PrivateNotesOverlay matchId={chat.matchId} matchName={chat.name} currentUser={currentUser} onClose={() => setShowNotes(false)} />}
     </PhoneShell>
   );
 };
@@ -2943,6 +2948,65 @@ const SafetyTipsOverlay = ({ onClose }) => (
   </div>
 );
 
+// ─── PRIVATE NOTES OVERLAY ────────────────────────────────────────────────────
+
+const PrivateNotesOverlay = ({ matchId, matchName, currentUser, onClose }) => {
+  const [note, setNote] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [savedAt, setSavedAt] = useState(null);
+
+  useEffect(() => {
+    if (!matchId || !currentUser) { setLoading(false); return; }
+    (async () => {
+      const { data } = await supabase.from("private_notes").select("note,updated_at").eq("user_id", currentUser.id).eq("match_id", matchId).maybeSingle();
+      if (data) { setNote(data.note || ""); setSavedAt(data.updated_at); }
+      setLoading(false);
+    })();
+  }, [matchId, currentUser]);
+
+  const save = async () => {
+    if (!matchId || !currentUser) return;
+    setSaving(true);
+    const trimmed = note.trim();
+    if (trimmed) {
+      await supabase.from("private_notes").upsert({ user_id: currentUser.id, match_id: matchId, note: trimmed, updated_at: new Date().toISOString() }, { onConflict: "user_id,match_id" });
+    } else {
+      await supabase.from("private_notes").delete().eq("user_id", currentUser.id).eq("match_id", matchId);
+    }
+    setSaving(false);
+    setSavedAt(new Date().toISOString());
+  };
+
+  return (
+    <div style={{ position:"absolute", inset:0, zIndex:300, background:"rgba(26,58,42,0.7)", borderRadius:44, display:"flex", flexDirection:"column", justifyContent:"flex-end" }}>
+      <div style={{ background:"#fdfaf5", borderRadius:"24px 24px 0 0", padding:"24px 20px 32px" }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+          <div style={{ fontFamily:"Georgia,serif", fontSize:20, fontWeight:700, color:theme.greenDeep }}>📝 Notes on {matchName}</div>
+          <button onClick={onClose} style={{ background:"none", border:"none", fontSize:22, cursor:"pointer", color:theme.textLight }}>✕</button>
+        </div>
+        <div style={{ fontSize:12, color:theme.textLight, marginBottom:16 }}>Private — only you can ever see this. Not shown to {matchName} or anyone else.</div>
+        {loading ? (
+          <div style={{ textAlign:"center", color:theme.textMid, fontSize:13, padding:"20px 0" }}>Loading...</div>
+        ) : (
+          <>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder={`Anything you'd like to remember about ${matchName}...`}
+              style={{ width:"100%", minHeight:120, padding:"12px 14px", borderRadius:14, border:"1px solid rgba(82,183,136,0.25)", fontSize:14, fontFamily:"'DM Sans',sans-serif", color:theme.textDark, resize:"vertical", boxSizing:"border-box", marginBottom:8 }}
+            />
+            <div style={{ fontSize:11, color:theme.textLight, marginBottom:16, minHeight:14 }}>
+              {saving ? "Saving..." : savedAt ? `Saved ${new Date(savedAt).toLocaleString("en-GB", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })}` : ""}
+            </div>
+            <button onClick={save} disabled={saving} style={{ width:"100%", padding:"14px", background:theme.greenBright, color:"white", border:"none", borderRadius:50, fontWeight:700, fontSize:15, cursor:saving?"default":"pointer", fontFamily:"'DM Sans',sans-serif", opacity:saving?0.7:1 }}>{saving ? "Saving..." : "Save note"}</button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // ─── PRIVACY INFO OVERLAY ─────────────────────────────────────────────────────
 
 const PrivacyInfoOverlay = ({ onClose }) => (
@@ -3506,7 +3570,7 @@ export default function App() {
       {screen === "onboarding" && <Onboarding onShowSignIn={() => setShowSignIn(true)} onFinish={handleSignup} onClearSignupError={() => setSignupError("")} />}
             {screen === "swipe" && <SwipeScreen onNav={handleNav} isPremium={isPremium} onUpgrade={handleUpgrade} onSubscribe={handleSubscribe} currentUser={currentUser} likedProfiles={likedProfiles} setLikedProfiles={setLikedProfiles} unreadCount={unreadCount} onLogout={handleSignOut} onOpenChat={c => setActiveChat(c)} />}
             {(screen === "chat" || screen === "liked" || screen === "likedyou") && !activeChat && <ChatList onNav={handleNav} onOpenChat={c => setActiveChat(c)} isPremium={isPremium} onUpgrade={handleUpgrade} currentUser={currentUser} onLogout={handleSignOut} defaultTab={screen === "liked" ? "liked" : screen === "likedyou" ? "likedyou" : "matches"} />}
-            {(screen === "chat" || screen === "liked" || screen === "likedyou") && activeChat && <ChatDetail key={activeChat.matchId} chat={activeChat} onBack={() => { setActiveChat(null); }} onNav={handleNav} isPremium={isPremium} currentUser={currentUser} />}
+            {(screen === "chat" || screen === "liked" || screen === "likedyou") && activeChat && <ChatDetail key={activeChat.matchId} chat={activeChat} onBack={() => { setActiveChat(null); }} onNav={handleNav} isPremium={isPremium} currentUser={currentUser} onUpgrade={handleUpgrade} />}
             {screen === "profile" && <ProfileScreen onNav={handleNav} unreadCount={unreadCount} isPremium={isPremium} onUpgrade={handleUpgrade} currentUser={currentUser} onLogout={handleSignOut} />}
             {screen === "settings" && <SettingsScreen onNav={handleNav} unreadCount={unreadCount} onLogout={handleSignOut} isPremium={isPremium} onUpgrade={handleUpgrade} onDeleteAccount={handleDeleteAccount} currentUser={currentUser} />}
           {screen === "privacy" && (
