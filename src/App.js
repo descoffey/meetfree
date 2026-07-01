@@ -928,8 +928,8 @@ const SwipeScreen = ({ onNav, isPremium, onUpgrade, onSubscribe, currentUser, li
       if (activeFilters.diet) query = query.eq("diet", activeFilters.diet);
       if (activeFilters.lookingFor) query = query.eq("looking_for", activeFilters.lookingFor);
       const myShowMe = myProfile?.show_me;
-      if (myShowMe === "Women") query = query.eq("gender", "Woman");
-      else if (myShowMe === "Men") query = query.eq("gender", "Man");
+      if (myShowMe === "Women") query = query.or("gender.eq.Woman,gender.is.null");
+      else if (myShowMe === "Men") query = query.or("gender.eq.Man,gender.is.null");
       // "Everyone" or unset — no gender filter applied
       if (activeFilters.ageMin) query = query.gte("age", parseInt(activeFilters.ageMin));
       if (activeFilters.ageMax) query = query.lte("age", parseInt(activeFilters.ageMax));
@@ -2466,21 +2466,25 @@ const ProfileScreen = ({ onNav, isPremium, onUpgrade, currentUser, onLogout, unr
         </div>
         <div style={{ marginBottom:16 }}>
           <label style={{ fontSize:12, fontWeight:600, color:theme.textMid, textTransform:"uppercase", letterSpacing:"0.05em", display:"block", marginBottom:6 }}>Looking for</label>
-          <select value={editData.looking_for || ""} onChange={e => setEditData(p => ({...p, looking_for:e.target.value}))} style={{ width:"100%", padding:"12px 16px", borderRadius:12, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:"none", boxSizing:"border-box", background:"white" }}>
-            <option value="">Select...</option>
+          <select value={editData.looking_for || "Dating"} onChange={e => setEditData(p => ({...p, looking_for:e.target.value}))} style={{ width:"100%", padding:"12px 16px", borderRadius:12, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:"none", boxSizing:"border-box", background:"white" }}>
             {["Dating","Friendship","Community","Activity partner"].map(o => <option key={o} value={o}>{o}</option>)}
           </select>
         </div>
         <div style={{ marginBottom:16 }}>
           <label style={{ fontSize:12, fontWeight:600, color:theme.textMid, textTransform:"uppercase", letterSpacing:"0.05em", display:"block", marginBottom:6 }}>I am <span style={{ textTransform:"none", fontWeight:400, color:theme.textLight }}>(optional)</span></label>
-          <select value={editData.gender || ""} onChange={e => setEditData(p => ({...p, gender:e.target.value}))} style={{ width:"100%", padding:"12px 16px", borderRadius:12, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:"none", boxSizing:"border-box", background:"white" }}>
+          <select value={editData.gender || ""} onChange={e => {
+            const g = e.target.value;
+            const autoShowMe = g === "Woman" ? "Men" : g === "Man" ? "Women" : g === "Non-binary" ? "Everyone" : "";
+            setEditData(p => ({...p, gender: g, show_me: autoShowMe || p.show_me}));
+          }} style={{ width:"100%", padding:"12px 16px", borderRadius:12, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:"none", boxSizing:"border-box", background:"white" }}>
             <option value="">Prefer not to say</option>
             <option value="Woman">Woman</option>
             <option value="Man">Man</option>
             <option value="Non-binary">Non-binary</option>
           </select>
         </div>
-        <div style={{ marginBottom:16 }}>
+        {editData.gender && (
+        <div style={{ marginBottom:16, animation:"fadeIn 0.25s ease" }}>
           <label style={{ fontSize:12, fontWeight:600, color:theme.textMid, textTransform:"uppercase", letterSpacing:"0.05em", display:"block", marginBottom:6 }}>Show me <span style={{ textTransform:"none", fontWeight:400, color:theme.textLight }}>(optional)</span></label>
           <select value={editData.show_me || "Everyone"} onChange={e => setEditData(p => ({...p, show_me:e.target.value}))} style={{ width:"100%", padding:"12px 16px", borderRadius:12, border:"2px solid rgba(82,183,136,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:"none", boxSizing:"border-box", background:"white" }}>
             <option value="Everyone">Everyone</option>
@@ -2488,6 +2492,7 @@ const ProfileScreen = ({ onNav, isPremium, onUpgrade, currentUser, onLogout, unr
             <option value="Men">Men</option>
           </select>
         </div>
+        )}
                 <div style={{ marginBottom:16, display:"flex", justifyContent:"space-between", alignItems:"center", background:"rgba(82,183,136,0.06)", borderRadius:12, padding:"12px 16px" }}>
           <div style={{ fontWeight:600, fontSize:14, color:theme.textDark }}>Do you smoke?</div>
           <div style={{ display:"flex", gap:8 }}>
@@ -3485,6 +3490,7 @@ export default function App() {
         ::-webkit-scrollbar { display: none; }
         input[type=range] { height: 4px; border-radius: 2px; }
         button, [role=button] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
         @keyframes bellShake { 0%,100%{transform:rotate(0) scale(1)} 15%{transform:rotate(20deg) scale(1.2)} 30%{transform:rotate(-15deg) scale(1.2)} 45%{transform:rotate(10deg) scale(1.1)} 60%{transform:rotate(-5deg) scale(1.1)} 75%{transform:rotate(3deg)} }
         @keyframes bellPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.3)} }
         .bell-active { animation: bellShake 0.8s ease infinite; transform-origin: top center; display:inline-block; }
