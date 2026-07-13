@@ -3458,6 +3458,14 @@ export default function App() {
   };
 
   useEffect(() => {
+    if (!("setAppBadge" in navigator)) return;
+    try {
+      if (unreadCount > 0) navigator.setAppBadge(unreadCount).catch(() => {});
+      else navigator.clearAppBadge().catch(() => {});
+    } catch(e) { /* Badging API not supported or blocked — fail silently */ }
+  }, [unreadCount]);
+
+  useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const chatParam = urlParams.get("chat");
 
