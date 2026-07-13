@@ -2042,8 +2042,8 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
                     </div>
                   )}
                 </div>
-                {!isMe && !m.deleted_for_everyone && (
-                  <button onClick={() => { setReplyingTo({ id: m.id, content: m.content, senderName: chat.name }); inputRef.current?.focus(); }} title="Reply" style={{ marginLeft:"auto", background:"rgba(82,183,136,0.12)", border:"none", borderRadius:"50%", width:26, height:26, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:13, color:theme.greenMid, flexShrink:0, opacity: hoveredMsgId === m.id ? 1 : 0, pointerEvents: hoveredMsgId === m.id ? "auto" : "none", transition:"opacity 0.15s" }}>↩</button>
+                {!m.deleted_for_everyone && (
+                  <button onClick={() => { setReplyingTo({ id: m.id, content: m.content, senderName: isMe ? "you" : chat.name }); inputRef.current?.focus(); }} title="Reply" style={{ marginLeft:"auto", background:"rgba(82,183,136,0.12)", border:"none", borderRadius:"50%", width:26, height:26, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:13, color:theme.greenMid, flexShrink:0, opacity: (isActualMobile || hoveredMsgId === m.id) ? 1 : 0, pointerEvents: (isActualMobile || hoveredMsgId === m.id) ? "auto" : "none", transition:"opacity 0.15s" }}>↩</button>
                 )}
                 {!isMe && !m.deleted_for_everyone && (
                   <button
@@ -2064,7 +2064,7 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
                   >🤍</button>
                 )}
                 {!m.deleted_for_everyone && (
-                  <button onClick={(e) => { e.stopPropagation(); if (deleteMenuMsgId === m.id) { setDeleteMenuMsgId(null); setMenuAnchor(null); } else { const r = e.currentTarget.getBoundingClientRect(); const menuWidth = 160; const margin = 8; const clampedLeft = Math.min(r.left, window.innerWidth - menuWidth - margin); setMenuAnchor({ top: r.bottom + 4, left: Math.max(margin, clampedLeft), isMe }); setDeleteMenuMsgId(m.id); } }} title="More options" style={{ marginLeft: isMe ? "auto" : 0, background:"rgba(82,183,136,0.12)", border:"none", borderRadius:"50%", width:26, height:26, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:13, color:theme.greenMid, flexShrink:0, opacity: (isActualMobile || hoveredMsgId === m.id || deleteMenuMsgId === m.id) ? 1 : 0, transition:"opacity 0.15s", position:"relative", zIndex: 1000 }}>⋯</button>
+                  <button onClick={(e) => { e.stopPropagation(); if (deleteMenuMsgId === m.id) { setDeleteMenuMsgId(null); setMenuAnchor(null); } else { const r = e.currentTarget.getBoundingClientRect(); const menuWidth = 160; const margin = 8; const clampedLeft = Math.min(r.left, window.innerWidth - menuWidth - margin); setMenuAnchor({ top: r.bottom + 4, left: Math.max(margin, clampedLeft), isMe }); setDeleteMenuMsgId(m.id); } }} title="More options" style={{ background:"rgba(82,183,136,0.12)", border:"none", borderRadius:"50%", width:26, height:26, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:13, color:theme.greenMid, flexShrink:0, opacity: (isActualMobile || hoveredMsgId === m.id || deleteMenuMsgId === m.id) ? 1 : 0, transition:"opacity 0.15s", position:"relative", zIndex: 1000 }}>⋯</button>
                 )}
                 {deleteMenuMsgId === m.id && menuAnchor && createPortal(
                   <>
