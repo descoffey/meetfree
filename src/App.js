@@ -39,6 +39,14 @@ const parseInterests = (interests) => {
 
 const isRealProfile = (p) => typeof p.id === "string" && p.id.length > 10;
 
+// Resize Supabase storage images on the fly — keeps bandwidth low on mobile
+const resizePhoto = (url, width = 400) => {
+  if (!url) return url;
+  if (!url.includes("supabase.co/storage")) return url; // don't touch external URLs
+  const base = url.split("?")[0];
+  return `${base}?width=${width}&quality=80&resize=cover`;
+};
+
 // ─── AD BANNER ────────────────────────────────────────────────────────────────
 
 const AdBanner = ({ onUpgrade }) => {
@@ -266,10 +274,10 @@ const playSound = (type) => {
 
 // ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
 
-const isMobile = typeof window !== "undefined" && window.innerWidth <= 480;
+const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
 
 const PhoneShell = ({ children, statusBar = true }) => (
-  <div style={{ width: isMobile ? "100vw" : 390, minHeight: isMobile ? "100dvh" : 844, maxHeight: isMobile ? "100dvh" : 844, background: theme.warmWhite, borderRadius: isMobile ? 0 : 44, overflow: "hidden", display: "flex", flexDirection: "column", position: "relative", fontFamily: "'DM Sans',sans-serif", boxShadow: isMobile ? "none" : "0 40px 100px rgba(26,58,42,0.25), 0 0 0 1px rgba(26,58,42,0.08)" }}>
+  <div style={{ width: isMobile ? "100vw" : 390, height: isMobile ? "100dvh" : "auto", minHeight: isMobile ? "100dvh" : 844, maxHeight: isMobile ? "100dvh" : 844, background: theme.warmWhite, borderRadius: isMobile ? 0 : 44, overflow: "hidden", display: "flex", flexDirection: "column", position: "relative", fontFamily: "'DM Sans',sans-serif", boxShadow: isMobile ? "none" : "0 40px 100px rgba(26,58,42,0.25), 0 0 0 1px rgba(26,58,42,0.08)", overscrollBehavior: "none", paddingBottom: isMobile ? "env(safe-area-inset-bottom)" : 0 }}>
     {statusBar && !isMobile && (
       <div style={{ background: theme.warmWhite, padding: "14px 28px 4px", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
         <span style={{ fontSize: 13, fontWeight: 600, color: theme.textDark }}>9:41</span>
@@ -625,7 +633,7 @@ const ProgressBar = ({ step, total }) => (
 
 // ─── PROFILE CARD ─────────────────────────────────────────────────────────────
 
-const ProfileCard = ({ p, onLike, onPass, onSuperLike, likedProfiles, matchedIds = [], onMessage, isPremium, superLikedProfiles = {} }) => {
+const ProfileCard = ({ p, onLike, onPass, onSuperLike, likedProfiles, matchedIds = [], onMessage, isPremium, superLikedProfiles = {}, likesLeft }) => {
   const isReal = isRealProfile(p);
   const key = "supabase_" + p.id;
   const isLiked = likedProfiles[key] || false;
@@ -656,7 +664,10 @@ const ProfileCard = ({ p, onLike, onPass, onSuperLike, likedProfiles, matchedIds
     <div style={{ borderRadius: 20, overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.07)", background: theme.warmWhite, marginBottom: 14 }}>
       <div onTouchStart={handlePhotoTouchStart} onTouchEnd={handlePhotoTouchEnd} style={{ height: 220, background: "linear-gradient(135deg,#d8f3dc,#b7e4c7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 90, position: "relative", overflow:"hidden" }}>
         {photos.length > 0
-          ? <img src={photos[photoIdx]} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover", position:"absolute", inset:0 }} />
+          ? <img src={resizePhoto(photos[photoIdx], 600)} alt={p.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} onLoad={e => { e.target.style.opacity=1; }} style={{ width:"100%", height:"100%", objectFit:"cover", position:"absolute", inset:0, opacity:0, transition:"opacity 0.3s" }} />
+          : null}
+        {photos.length > 0
+          ? <span style={{ zIndex:1, display:"none", fontSize:90 }}>{p.emoji || "🌿"}</span>
           : <span style={{ zIndex:1 }}>{p.emoji || "🌿"}</span>
         }
         <div style={{ position:"absolute", top:10, right:10, background:theme.greenDeep, color:"white", fontSize:11, fontWeight:700, padding:"4px 10px", borderRadius:50, zIndex:2 }}>
@@ -709,6 +720,7 @@ const ProfileCard = ({ p, onLike, onPass, onSuperLike, likedProfiles, matchedIds
           </div>
         ) : (
           <div style={{ display:"flex", gap:8 }}>
+            {!isPremium && likesLeft !== undefined && <div style={{ width:"100%", textAlign:"center", fontSize:11, color:theme.textLight, marginBottom:4, position:"absolute", top:-18, left:0 }}>{likesLeft} free {likesLeft === 1 ? "like" : "likes"} remaining today</div>}
             <button
               onClick={() => onPass && onPass(p)}
               style={{ flex:1, padding:"13px", borderRadius:50, border:"2px solid rgba(82,183,136,0.15)", background:"white", color:theme.textLight, fontSize:15, fontWeight:700, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", transition:"all 0.2s" }}
@@ -1393,11 +1405,11 @@ const SwipeScreen = ({ onNav, isPremium, onUpgrade, onSubscribe, currentUser, li
               <>
                 {hasLiked && <div style={{ fontSize:11, fontWeight:700, color:theme.greenBright, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>💚 People you've liked</div>}
                 {allLiked.map(p => (
-                  <ProfileCard key={String(p.id)+"_liked"} p={p} onLike={handleLike} onPass={handlePass} onSuperLike={handleSuperLike} likedProfiles={liked} matchedIds={matchedIds} onMessage={handleMessage} isPremium={isPremium} superLikedProfiles={superLikedProfiles} />
+                  <ProfileCard key={String(p.id)+"_liked"} p={p} onLike={handleLike} onPass={handlePass} onSuperLike={handleSuperLike} likedProfiles={liked} matchedIds={matchedIds} onMessage={handleMessage} isPremium={isPremium} superLikedProfiles={superLikedProfiles} likesLeft={likesLeft} />
                 ))}
                 {discover.length > 0 && hasLiked && <div style={{ fontSize:11, fontWeight:700, color:theme.textLight, textTransform:"uppercase", letterSpacing:"0.08em", margin:"16px 0 8px" }}>Discover more</div>}
                 {discover.map(p => (
-                  <ProfileCard key={String(p.id)+"_"+( p.name||"")} p={p} onLike={handleLike} onPass={handlePass} onSuperLike={handleSuperLike} likedProfiles={liked} matchedIds={matchedIds} onMessage={handleMessage} isPremium={isPremium} superLikedProfiles={superLikedProfiles} />
+                  <ProfileCard key={String(p.id)+"_"+( p.name||"")} p={p} onLike={handleLike} onPass={handlePass} onSuperLike={handleSuperLike} likedProfiles={liked} matchedIds={matchedIds} onMessage={handleMessage} isPremium={isPremium} superLikedProfiles={superLikedProfiles} likesLeft={likesLeft} />
                 ))}
                 {discover.length === 0 && !hasLiked && (
                   <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"100%", textAlign:"center", padding:32 }}>
@@ -1612,7 +1624,7 @@ const ChatList = ({ onNav, onOpenChat, isPremium, onUpgrade, currentUser, onLogo
                 else setSelectedLiked(selectedLiked?.id === p.id ? null : p);
               }}>
                 <div style={{ width:50, height:50, borderRadius:"50%", background:"#d8f3dc", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, flexShrink:0, overflow:"hidden" }}>
-                  {p.photo_url ? <img src={p.photo_url} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} /> : (p.emoji || "🌿")}
+                  {p.photo_url ? <img src={resizePhoto(p.photo_url, 100)} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} /> : (p.emoji || "🌿")}
                 </div>
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontWeight:700, color:theme.textDark, fontSize:15 }}>{p.isSuperLike ? "⭐ " : ""}{p.name}{p.age ? ", " + p.age : ""}</div>
@@ -1649,7 +1661,7 @@ const ChatList = ({ onNav, onOpenChat, isPremium, onUpgrade, currentUser, onLogo
             <div key={p.id}>
               <div style={{ display:"flex", gap:14, padding:"13px 24px", alignItems:"center", cursor:"pointer" }} onClick={() => setSelectedLiked(selectedLiked?.id === p.id ? null : p)}>
                 <div style={{ width:50, height:50, borderRadius:"50%", background:"#d8f3dc", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, flexShrink:0, overflow:"hidden" }}>
-                  {p.photo_url ? <img src={p.photo_url} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} /> : "🌿"}
+                  {p.photo_url ? <img src={resizePhoto(p.photo_url, 100)} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} /> : "🌿"}
                 </div>
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontWeight:700, color:theme.textDark, fontSize:15 }}>{p.isSuperLike ? "⭐ " : ""}{p.name}{p.age ? ", " + p.age : ""}</div>
@@ -1688,7 +1700,7 @@ const ChatList = ({ onNav, onOpenChat, isPremium, onUpgrade, currentUser, onLogo
             {matches.map(m => (
               <div key={m.id} onClick={() => { onOpenChat({ ...m.profile, matchId: m.id }); onNav("chat"); }} style={{ display: "flex", gap: 14, padding: "13px 24px", alignItems: "center", cursor: "pointer", background: m.hasUnread ? "rgba(82,183,136,0.06)" : "white", borderLeft: m.hasUnread ? "3px solid #52b788" : "3px solid transparent" }}>
                 <div style={{ width: 50, height: 50, borderRadius: "50%", background: "#d8f3dc", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0, overflow:"hidden" }}>
-                  {m.profile.photo_url ? <img src={m.profile.photo_url} alt={m.profile.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} /> : "🌿"}
+                  {m.profile.photo_url ? <img src={resizePhoto(m.profile.photo_url, 100)} alt={m.profile.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} /> : "🌿"}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
@@ -1749,6 +1761,10 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
   const [swipeOffset, setSwipeOffset] = useState(0);
   const swipeStartX = useRef(null);
   const SWIPE_THRESHOLD = 60;
+  const [reactions, setReactions] = useState({}); // { [messageId]: [{emoji, user_id}] }
+  const [reactionPickerMsgId, setReactionPickerMsgId] = useState(null);
+  const [reactionAnchor, setReactionAnchor] = useState(null);
+  const REACTION_EMOJIS = ["👍","❤️","😂","😮","😢","🙏","🔥","😍","🌱"];
 
   // Load messages and poll for new ones every 8 seconds
   useEffect(() => {
@@ -1767,6 +1783,16 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
       setMsgs(data || []);
       setLoading(false);
       setTimeout(() => inputRef.current?.focus(), 600);
+      // Fetch reactions for this match's messages
+      if (data && data.length > 0) {
+        const msgIds = data.map(m => m.id);
+        const { data: rxData } = await supabase.from("message_reactions").select("*").in("message_id", msgIds);
+        if (rxData) {
+          const grouped = {};
+          rxData.forEach(r => { if (!grouped[r.message_id]) grouped[r.message_id] = []; grouped[r.message_id].push(r); });
+          setReactions(grouped);
+        }
+      }
       // Check for contact request
       const { data: cr } = await supabase.from("contact_requests").select("*").eq("match_id", chat.matchId).maybeSingle();
       if (cr) { setContactRequest(cr); if (cr.status === "accepted") setContactRevealed(true); }
@@ -1781,6 +1807,16 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
           if (newMsgs.length > 0) playSound("receive");
           return data;
         });
+        // Also refresh reactions
+        const msgIds = data.map(m => m.id);
+        if (msgIds.length > 0) {
+          const { data: rxData } = await supabase.from("message_reactions").select("*").in("message_id", msgIds);
+          if (rxData) {
+            const grouped = {};
+            rxData.forEach(r => { if (!grouped[r.message_id]) grouped[r.message_id] = []; grouped[r.message_id].push(r); });
+            setReactions(grouped);
+          }
+        }
       }
       // Also refresh the other person's read_at for read receipts
       try {
@@ -1805,6 +1841,20 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
     }
     prevMsgCount.current = msgs.length;
   }, [msgs]);
+
+  const toggleReaction = async (msgId, emoji) => {
+    if (!currentUser) return;
+    const existing = (reactions[msgId] || []).find(r => r.user_id === currentUser.id);
+    if (existing && existing.emoji === emoji) {
+      await supabase.from("message_reactions").delete().eq("id", existing.id);
+      setReactions(prev => ({ ...prev, [msgId]: (prev[msgId] || []).filter(r => r.id !== existing.id) }));
+    } else {
+      if (existing) await supabase.from("message_reactions").delete().eq("id", existing.id);
+      const { data } = await supabase.from("message_reactions").insert({ message_id: msgId, user_id: currentUser.id, emoji }).select().maybeSingle();
+      if (data) setReactions(prev => ({ ...prev, [msgId]: [...(prev[msgId] || []).filter(r => r.user_id !== currentUser.id), data] }));
+    }
+    setReactionPickerMsgId(null);
+  };
 
   const deleteForMe = async (msgId) => {
     if (deletingMsg) return;
@@ -1839,17 +1889,31 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
     if (!text.trim() || !currentUser || !chat.matchId) return;
     const content = text.trim();
     setText("");
+    if (inputRef.current) { inputRef.current.style.height = "auto"; }
     const replyData = replyingTo ? { reply_to_id: replyingTo.id, reply_to_content: replyingTo.content } : {};
     setReplyingTo(null);
     playSound("send");
+
+    // Optimistically add the message immediately so it appears without waiting for the server
+    const tempId = `temp-${Date.now()}`;
+    const tempMsg = { id: tempId, match_id: chat.matchId, sender_id: currentUser.id, content, created_at: new Date().toISOString(), pending: true, ...replyData };
+    setMsgs(prev => [...prev, tempMsg]);
+    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+
     const { data: msgData, error } = await supabase.from("messages").insert({ match_id: chat.matchId, sender_id: currentUser.id, content, ...replyData }).select().maybeSingle();
-    if (error) { console.error("Send message error:", error); return; }
+    if (error) {
+      console.error("Send message error:", error);
+      setMsgs(prev => prev.filter(m => m.id !== tempId)); // Remove optimistic message on error
+      return;
+    }
+    // Replace the optimistic message with the real one from the server
+    setMsgs(prev => prev.map(m => m.id === tempId ? { ...msgData, pending: false } : m));
     try {
       const { data: senderProfile } = await supabase.from("profiles").select("name").eq("id", currentUser.id).maybeSingle();
       const senderName = senderProfile?.name || "Someone";
       const { error: emailErr } = await supabase.functions.invoke("send-message-email", { body: { matchId: chat.matchId, senderName, recipientId: chat.id, senderId: currentUser.id, messageId: msgData?.id } });
       if (emailErr) console.error("Email notify error:", emailErr);
-      const { error: pushErr } = await supabase.functions.invoke("send-push-notification", { body: { recipientId: chat.id, title: `💬 New message from ${senderName}`, body: content, url: `https://app.meetfree.uk?chat=${chat.matchId}` } });
+      const { error: pushErr } = await supabase.functions.invoke("send-push-notification", { body: { recipientId: chat.id, title: `💬 New message from ${senderName}`, body: content, url: `https://app.meetfree.uk?chat=${chat.matchId}`, matchId: chat.matchId } });
       if (pushErr) console.error("Push notify error:", pushErr);
     } catch(e) { console.error("Notify error:", e); }
   };
@@ -1865,7 +1929,7 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
       <div style={{ padding: "12px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid rgba(82,183,136,0.1)", flexShrink: 0 }}>
         <button onClick={onBack} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer" }}>←</button>
         <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#d8f3dc", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, overflow:"hidden" }}>
-          {chat.photo_url ? <img src={chat.photo_url} alt={chat.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} /> : "🌿"}
+          {chat.photo_url ? <img src={resizePhoto(chat.photo_url, 100)} alt={chat.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} /> : "🌿"}
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 700, color: theme.textDark, fontSize: 16 }}>{chat.name}{chat.is_real && <span title="Verified" style={{ marginLeft:4, fontSize:13 }}>✅</span>}</div>
@@ -1916,15 +1980,29 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
             const isSeen = isMe && otherReadAt && msgDate && otherReadAt > msgDate;
             return (
               <div key={m.id} style={{ display: "flex", flexDirection: "column", alignItems: isMe ? "flex-end" : "flex-start", position: "relative" }}
-                onTouchStart={(e) => { swipeStartX.current = e.touches[0].clientX; setSwipeMsgId(m.id); }}
+                onTouchStart={(e) => {
+                  swipeStartX.current = e.touches[0].clientX;
+                  setSwipeMsgId(m.id);
+                  if (!m.deleted_for_everyone) {
+                    const touch = e.touches[0];
+                    e.currentTarget._longPress = setTimeout(() => {
+                      const r = e.currentTarget.getBoundingClientRect();
+                      setReactionPickerMsgId(m.id);
+                      setReactionAnchor({ top: r.top - 60, isMe });
+                    }, 500);
+                  }
+                }}
                 onTouchMove={(e) => {
                   if (swipeStartX.current === null || swipeMsgId !== m.id) return;
                   const delta = e.touches[0].clientX - swipeStartX.current;
+                  // Cancel long-press if user starts swiping
+                  if (Math.abs(delta) > 10) clearTimeout(e.currentTarget._longPress);
                   // Swipe right to reply (works for both sent and received messages)
                   const clamped = Math.max(0, Math.min(delta, 90));
                   setSwipeOffset(clamped);
                 }}
-                onTouchEnd={() => {
+                onTouchEnd={(e) => {
+                  clearTimeout(e.currentTarget._longPress);
                   if (swipeMsgId === m.id && swipeOffset > SWIPE_THRESHOLD) {
                     setReplyingTo({ id: m.id, content: m.content, senderName: isMe ? "you" : chat.name });
                     inputRef.current?.focus();
@@ -1939,14 +2017,14 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
                 {swipeMsgId === m.id && swipeOffset > 15 && (
                   <div style={{ position:"absolute", left: isMe ? "auto" : -40, right: isMe ? -40 : "auto", top:"50%", transform:"translateY(-50%)", width:28, height:28, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, background: swipeOffset > SWIPE_THRESHOLD ? theme.greenBright : "rgba(82,183,136,0.2)", color: swipeOffset > SWIPE_THRESHOLD ? "white" : theme.greenMid, opacity: Math.min(swipeOffset / 30, 1), transition:"background 0.15s, color 0.15s" }}>↩</div>
                 )}
-                <div style={{ display:"flex", alignItems:"center", gap:6, transform: swipeMsgId === m.id ? `translateX(${swipeOffset}px)` : "translateX(0)", transition: swipeMsgId === m.id ? "none" : "transform 0.2s ease-out" }}>
-                  <div onClick={(e) => { if (swipeOffset < 15 && !m.deleted_for_everyone) { if (deleteMenuMsgId === m.id) { setDeleteMenuMsgId(null); setMenuAnchor(null); } else { const r = e.currentTarget.getBoundingClientRect(); setMenuAnchor({ top: r.bottom + 4, right: window.innerWidth - r.right, left: r.left, isMe }); setDeleteMenuMsgId(m.id); } } }} style={{ maxWidth: "72%", borderRadius: isMe ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: m.content.startsWith("[img]") ? "transparent" : isMe ? theme.greenDeep : "white", color: isMe ? "white" : theme.textDark, fontSize: 14, lineHeight: 1.5, boxShadow: m.content.startsWith("[img]") ? "none" : "0 2px 8px rgba(26,58,42,0.08)", overflow: "hidden", cursor: "pointer" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:6, width:"100%", transform: swipeMsgId === m.id ? `translateX(${swipeOffset}px)` : "translateX(0)", transition: swipeMsgId === m.id ? "none" : "transform 0.2s ease-out" }}>
+                  <div onClick={(e) => { if (!isActualMobile && swipeOffset < 15 && !m.deleted_for_everyone) { if (deleteMenuMsgId === m.id) { setDeleteMenuMsgId(null); setMenuAnchor(null); } else { const r = e.currentTarget.getBoundingClientRect(); const menuWidth = 160; const margin = 8; const clampedLeft = Math.min(r.left, window.innerWidth - menuWidth - margin); setMenuAnchor({ top: r.bottom + 4, left: Math.max(margin, clampedLeft), isMe }); setDeleteMenuMsgId(m.id); } } }} style={{ maxWidth: "72%", minWidth: 60, borderRadius: isMe ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: m.content.startsWith("[img]") ? "transparent" : isMe ? theme.greenDeep : "white", color: isMe ? "white" : theme.textDark, fontSize: 14, lineHeight: 1.5, boxShadow: m.content.startsWith("[img]") ? "none" : "0 2px 8px rgba(26,58,42,0.08)", overflow: "hidden", cursor: "pointer", opacity: m.pending ? 0.7 : 1, transition: "opacity 0.3s" }}>
                   {m.reply_to_content && (
                     <div style={{ margin:"8px 8px 0", padding:"6px 10px", borderLeft:`3px solid ${isMe ? "rgba(255,255,255,0.5)" : theme.greenBright}`, background: isMe ? "rgba(255,255,255,0.15)" : "rgba(82,183,136,0.08)", borderRadius:6, fontSize:11, color: isMe ? "rgba(255,255,255,0.8)" : theme.textMid }}>
                       ↩ {m.reply_to_content.startsWith("[img]") ? "📷 Photo" : m.reply_to_content.slice(0, 60) + (m.reply_to_content.length > 60 ? "…" : "")}
                     </div>
                   )}
-                  <div style={{ padding: m.content.startsWith("[img]") ? 0 : "10px 14px" }}>
+                  <div style={{ padding: m.content.startsWith("[img]") ? 0 : "10px 14px", whiteSpace: "pre-wrap" }}>
                     {m.deleted_for_everyone
                       ? <span style={{ fontStyle:"italic", color: isMe ? "rgba(255,255,255,0.6)" : theme.textLight, fontSize:13 }}>🚫 This message was deleted</span>
                       : m.content.startsWith("[img]") && m.content.endsWith("[/img]")
@@ -1957,22 +2035,41 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
                   {isMe && (
                     <div style={{ display:"flex", justifyContent:"flex-end", alignItems:"center", gap:4, padding:"2px 10px 6px", marginTop:-4 }}>
                       {time && <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)" }}>{time}</div>}
-                      {!isSeen && <div style={{ fontSize:11, color:"rgba(255,255,255,0.45)", lineHeight:1 }}>✓✓</div>}
-                      {isSeen && !isLastMine && <div style={{ fontSize:11, color:"#00ffaa", fontWeight:700, lineHeight:1 }}>✓✓</div>}
-                      {isSeen && isLastMine && <div style={{ fontSize:11, color:"#00ffaa", fontWeight:700, lineHeight:1 }}>Seen</div>}
+                      {m.pending && <div style={{ fontSize:11, color:"rgba(255,255,255,0.45)", lineHeight:1 }}>⏱</div>}
+                      {!m.pending && !isSeen && <div style={{ fontSize:11, color:"rgba(255,255,255,0.45)", lineHeight:1 }}>✓✓</div>}
+                      {!m.pending && isSeen && !isLastMine && <div style={{ fontSize:11, color:"#00ffaa", fontWeight:700, lineHeight:1 }}>✓✓</div>}
+                      {!m.pending && isSeen && isLastMine && <div style={{ fontSize:11, color:"#00ffaa", fontWeight:700, lineHeight:1 }}>Seen</div>}
                     </div>
                   )}
                 </div>
                 {!isMe && !m.deleted_for_everyone && (
-                  <button onClick={() => { setReplyingTo({ id: m.id, content: m.content, senderName: chat.name }); inputRef.current?.focus(); }} title="Reply" style={{ background:"rgba(82,183,136,0.12)", border:"none", borderRadius:"50%", width:26, height:26, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:13, color:theme.greenMid, flexShrink:0, opacity: hoveredMsgId === m.id ? 1 : 0, pointerEvents: hoveredMsgId === m.id ? "auto" : "none", transition:"opacity 0.15s" }}>↩</button>
+                  <button onClick={() => { setReplyingTo({ id: m.id, content: m.content, senderName: chat.name }); inputRef.current?.focus(); }} title="Reply" style={{ marginLeft:"auto", background:"rgba(82,183,136,0.12)", border:"none", borderRadius:"50%", width:26, height:26, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:13, color:theme.greenMid, flexShrink:0, opacity: hoveredMsgId === m.id ? 1 : 0, pointerEvents: hoveredMsgId === m.id ? "auto" : "none", transition:"opacity 0.15s" }}>↩</button>
+                )}
+                {!isMe && !m.deleted_for_everyone && (
+                  <button
+                    onClick={(e) => {
+                      if (isActualMobile) {
+                        toggleReaction(m.id, "❤️");
+                      } else {
+                        const r = e.currentTarget.getBoundingClientRect();
+                        setReactionPickerMsgId(reactionPickerMsgId === m.id ? null : m.id);
+                        setReactionAnchor({ top: r.top - 60, isMe });
+                      }
+                    }}
+                    onContextMenu={(e) => { e.preventDefault(); const r = e.currentTarget.getBoundingClientRect(); setReactionPickerMsgId(reactionPickerMsgId === m.id ? null : m.id); setReactionAnchor({ top: r.top - 60, isMe }); }}
+                    onTouchStart={(e) => { const btn = e.currentTarget; btn._longPress = setTimeout(() => { const r = btn.getBoundingClientRect(); setReactionPickerMsgId(m.id); setReactionAnchor({ top: r.top - 60, isMe }); }, 500); }}
+                    onTouchEnd={(e) => { clearTimeout(e.currentTarget._longPress); }}
+                    title={isActualMobile ? "Tap to ❤️ · Hold for more" : "Click to ❤️ · Right-click for more"}
+                    style={{ background:"rgba(82,183,136,0.12)", border:"none", borderRadius:"50%", width:26, height:26, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:13, color:theme.greenMid, flexShrink:0, opacity: (isActualMobile || hoveredMsgId === m.id) ? 1 : 0, transition:"opacity 0.15s" }}
+                  >🤍</button>
                 )}
                 {!m.deleted_for_everyone && (
-                  <button onClick={(e) => { e.stopPropagation(); if (deleteMenuMsgId === m.id) { setDeleteMenuMsgId(null); setMenuAnchor(null); } else { const r = e.currentTarget.getBoundingClientRect(); setMenuAnchor({ top: r.bottom + 4, right: window.innerWidth - r.right, left: r.left, isMe }); setDeleteMenuMsgId(m.id); } }} title="More options" style={{ background:"rgba(82,183,136,0.12)", border:"none", borderRadius:"50%", width:26, height:26, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:13, color:theme.greenMid, flexShrink:0, opacity: (hoveredMsgId === m.id || deleteMenuMsgId === m.id) ? 1 : 0, transition:"opacity 0.15s", position:"relative", zIndex: 1000 }}>⋯</button>
+                  <button onClick={(e) => { e.stopPropagation(); if (deleteMenuMsgId === m.id) { setDeleteMenuMsgId(null); setMenuAnchor(null); } else { const r = e.currentTarget.getBoundingClientRect(); const menuWidth = 160; const margin = 8; const clampedLeft = Math.min(r.left, window.innerWidth - menuWidth - margin); setMenuAnchor({ top: r.bottom + 4, left: Math.max(margin, clampedLeft), isMe }); setDeleteMenuMsgId(m.id); } }} title="More options" style={{ marginLeft: isMe ? "auto" : 0, background:"rgba(82,183,136,0.12)", border:"none", borderRadius:"50%", width:26, height:26, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:13, color:theme.greenMid, flexShrink:0, opacity: (isActualMobile || hoveredMsgId === m.id || deleteMenuMsgId === m.id) ? 1 : 0, transition:"opacity 0.15s", position:"relative", zIndex: 1000 }}>⋯</button>
                 )}
                 {deleteMenuMsgId === m.id && menuAnchor && createPortal(
                   <>
                     <div onClick={() => { setDeleteMenuMsgId(null); setMenuAnchor(null); }} style={{ position:"fixed", inset:0, zIndex:998, background:"transparent" }} />
-                    <div style={{ position:"fixed", top: menuAnchor.top, right: menuAnchor.isMe ? menuAnchor.right : "auto", left: menuAnchor.isMe ? "auto" : menuAnchor.left, background:"white", borderRadius:12, boxShadow:"0 4px 16px rgba(26,58,42,0.18)", zIndex:999, minWidth:160, overflow:"hidden" }}>
+                    <div style={{ position:"fixed", top: menuAnchor.top, left: menuAnchor.left, background:"white", borderRadius:12, boxShadow:"0 4px 16px rgba(26,58,42,0.18)", zIndex:999, minWidth:160, overflow:"hidden" }}>
                       <button onClick={() => { deleteForMe(m.id); setMenuAnchor(null); }} style={{ display:"block", width:"100%", textAlign:"left", padding:"10px 16px", background:"white", border:"none", cursor:"pointer", fontSize:13, color:theme.textDark, fontFamily:"'DM Sans',sans-serif" }}>🗑 Delete for me</button>
                       {isMe && <button onClick={() => { deleteForEveryone(m.id); setMenuAnchor(null); }} style={{ display:"block", width:"100%", textAlign:"left", padding:"10px 16px", background:"white", border:"none", borderTop:"1px solid rgba(82,183,136,0.1)", cursor:"pointer", fontSize:13, color:"#e05a5a", fontFamily:"'DM Sans',sans-serif" }}>🗑 Delete for everyone</button>}
                     </div>
@@ -1980,6 +2077,32 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
                   document.body
                 )}
                 </div>
+                {/* Reaction display row */}
+                {(reactions[m.id] || []).length > 0 && (
+                  <div style={{ display:"flex", flexWrap:"wrap", gap:4, marginTop:4, justifyContent: isMe ? "flex-end" : "flex-start" }}>
+                    {Object.entries((reactions[m.id] || []).reduce((acc, r) => { acc[r.emoji] = (acc[r.emoji] || []); acc[r.emoji].push(r.user_id); return acc; }, {})).map(([emoji, users]) => (
+                      <button key={emoji} onClick={() => toggleReaction(m.id, emoji)} style={{ background: users.includes(currentUser?.id) ? "rgba(82,183,136,0.2)" : "rgba(0,0,0,0.06)", border: users.includes(currentUser?.id) ? "1px solid rgba(82,183,136,0.4)" : "1px solid rgba(0,0,0,0.08)", borderRadius:12, padding:"2px 7px", fontSize:13, cursor:"pointer", display:"flex", alignItems:"center", gap:3 }}>
+                        {emoji}<span style={{ fontSize:11, color:theme.textMid }}>{users.length > 1 ? users.length : ""}</span>
+                      </button>
+                    ))}
+                    <button onClick={(e) => { const r = e.currentTarget.getBoundingClientRect(); setReactionPickerMsgId(reactionPickerMsgId === m.id ? null : m.id); setReactionAnchor({ top: r.top - 60, left: isMe ? "auto" : r.left, right: isMe ? window.innerWidth - r.right : "auto", isMe }); }} style={{ background:"rgba(0,0,0,0.04)", border:"1px solid rgba(0,0,0,0.08)", borderRadius:12, padding:"2px 7px", fontSize:13, cursor:"pointer", color:theme.textLight }}>+</button>
+                  </div>
+                )}
+                {/* Reaction picker popup — centred horizontally, anchored vertically to message */}
+                {reactionPickerMsgId === m.id && reactionAnchor && createPortal(
+                  <>
+                    <div onClick={() => { setReactionPickerMsgId(null); setReactionAnchor(null); }} style={{ position:"fixed", inset:0, zIndex:997, background:"transparent" }} />
+                    <div style={{ position:"fixed", top: reactionAnchor.top, left:"50%", transform:"translateX(-50%)", background:"white", borderRadius:50, boxShadow:"0 4px 20px rgba(26,58,42,0.2)", zIndex:998, display:"flex", gap:2, padding:"8px 10px", maxWidth:"95vw", flexWrap:"nowrap" }}>
+                      {REACTION_EMOJIS.map(emoji => (
+                        <button key={emoji} onClick={() => { toggleReaction(m.id, emoji); setReactionAnchor(null); }} style={{ background:"none", border:"none", fontSize:22, cursor:"pointer", padding:"4px 5px", borderRadius:8, transition:"transform 0.1s" }}
+                          onMouseEnter={e => e.currentTarget.style.transform="scale(1.3)"}
+                          onMouseLeave={e => e.currentTarget.style.transform="scale(1)"}
+                        >{emoji}</button>
+                      ))}
+                    </div>
+                  </>,
+                  document.body
+                )}
                 {!isMe && time && (
                   <div style={{ display:"flex", alignItems:"center", gap:4, marginTop:3, marginBottom:4, paddingLeft:4 }}>
                     <div style={{ fontSize: 10, color: theme.textLight }}>{time}</div>
@@ -2024,7 +2147,7 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
           <div style={{ fontSize: 13, color: theme.textMid }}>{chat.email || "No email on file"}</div>
         </div>
       )}
-      {msgs.length === 0 && !inputFocused && (
+      {!loading && msgs.filter(m => !m.deleted_for_everyone).length < 6 && !inputFocused && !contactRequest && !contactRevealed && (
       <div style={{ padding: "6px 16px 2px", display: "flex", gap: 8, background: "white", borderTop: "1px solid rgba(82,183,136,0.1)", flexShrink: 0 }}>
         <button onClick={() => setText("Fancy meeting up sometime? ☕")} style={{ fontSize: 12, padding: "5px 12px", borderRadius: 50, border: "1px solid rgba(82,183,136,0.3)", background: "white", color: theme.greenMid, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", whiteSpace: "nowrap" }}>☕ Suggest meeting up</button>
         <button onClick={() => setShowSafetyPrompt(true)} style={{ fontSize: 12, padding: "5px 12px", borderRadius: 50, border: "1px solid rgba(82,183,136,0.3)", background: "white", color: theme.greenMid, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", whiteSpace: "nowrap" }}>☎️ Share number</button>
@@ -2118,8 +2241,12 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
             e.target.value = "";
           }} />
         </label>
-        <input ref={inputRef} value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Message..." onFocus={() => setInputFocused(true)} onBlur={() => setInputFocused(false)} style={{ flex: 1, padding: "10px 16px", borderRadius: 50, border: "2px solid rgba(82,183,136,0.2)", background: theme.warmWhite, fontFamily: "'DM Sans',sans-serif", fontSize: 14, outline: "none" }} />
-        <button onClick={send} style={{ width: 40, height: 40, borderRadius: "50%", background: theme.greenBright, border: "none", fontSize: 18, cursor: "pointer" }}>↑</button>
+        <textarea ref={inputRef} value={text} onChange={e => { setText(e.target.value); e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px"; }} onKeyDown={e => {
+          const enterToSend = (() => { try { return localStorage.getItem("meetfree_enter_to_send") === "true"; } catch(e) { return false; } })();
+          if (e.key === "Enter" && !e.shiftKey && enterToSend) { e.preventDefault(); send(); }
+          if (e.key === "Enter" && e.shiftKey) { /* allow new line */ }
+        }} placeholder="Message..." onFocus={() => setInputFocused(true)} onBlur={() => setInputFocused(false)} rows={1} style={{ flex: 1, padding: "10px 16px", borderRadius: 20, border: "2px solid rgba(82,183,136,0.2)", background: theme.warmWhite, fontFamily: "'DM Sans',sans-serif", fontSize: 14, outline: "none", resize: "none", overflow: "hidden", lineHeight: 1.4, maxHeight: 120 }} />
+        <button onMouseDown={e => e.preventDefault()} onClick={send} style={{ width: 40, height: 40, borderRadius: "50%", background: theme.greenBright, border: "none", fontSize: 18, cursor: "pointer", flexShrink: 0 }}>↑</button>
         </div>
       </div>
       {(!inputFocused || !isActualMobile) && <BottomNav active="chat" onNav={(screen) => { if (screen === "chat") onBack(); else onNav(screen); }} isPremium={isPremium} unreadCount={unreadCount} />}
@@ -2685,6 +2812,7 @@ const ProfileScreen = ({ onNav, isPremium, onUpgrade, currentUser, onLogout, unr
 const SettingsScreen = ({ onNav, onLogout, onDeleteAccount, isPremium, onUpgrade, unreadCount = 0, currentUser }) => {
   const [notifs, setNotifs] = useState(false);
   const [showPrivacyInfo, setShowPrivacyInfo] = useState(false);
+  const [enterToSend, setEnterToSend] = useState(() => { try { return localStorage.getItem("meetfree_enter_to_send") === "true"; } catch(e) { return false; } });
   const VAPID_PUBLIC_KEY = "BE8wDhmjv5Ahta8yM2HkMowLQ6Ul6cvzgGoGjZ3jKO6Wj72EUZhLgJh9Z_4usJmVTE2vxMaT3aZ8r_cVacmCGbE";
 
   const urlBase64ToUint8Array = (base64String) => {
@@ -2819,6 +2947,7 @@ const SettingsScreen = ({ onNav, onLogout, onDeleteAccount, isPremium, onUpgrade
           <div style={sectionLabel}>Account</div>
           <div style={{ background: "white", borderRadius: 14, overflow: "hidden", border: "1px solid rgba(82,183,136,0.1)" }}>
             <Row label="Change password" right={<span style={{ color: theme.textLight }}>›</span>} onPress={() => setShowChangePassword(true)} />
+            <Row label="⌨️ Enter key sends message" right={<input type="checkbox" checked={enterToSend} onChange={e => { setEnterToSend(e.target.checked); try { localStorage.setItem("meetfree_enter_to_send", e.target.checked ? "true" : "false"); } catch(err) {} }} style={{ width:18, height:18, accentColor:theme.greenBright, cursor:"pointer" }} />} onPress={() => {}} />
             <Row label="🔒 Your privacy" right={<span style={{ color: theme.textLight }}>›</span>} onPress={() => setShowPrivacyInfo(true)} />
             <Row label="Privacy policy" right={<span style={{ color: theme.textLight }}>›</span>} onPress={() => onNav("privacy")} />
             <Row label="Terms of service" right={<span style={{ color: theme.textLight }}>›</span>} onPress={() => onNav("terms")} />
@@ -3483,7 +3612,7 @@ export default function App() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg,#e8f5e9 0%,#f1f8e9 50%,#e0f2f1 100%)", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "20px 20px", fontFamily: "'DM Sans',sans-serif", overflowY: "auto" }}>
+    <div style={{ minHeight: "100dvh", background: isMobile ? theme.warmWhite : "linear-gradient(135deg,#e8f5e9 0%,#f1f8e9 50%,#e0f2f1 100%)", display: "flex", alignItems: isMobile ? "stretch" : "flex-start", justifyContent: "center", padding: isMobile ? 0 : "20px 20px", fontFamily: "'DM Sans',sans-serif", overscrollBehavior: "none" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; }
