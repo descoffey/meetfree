@@ -1407,7 +1407,7 @@ const SwipeScreen = ({ onNav, isPremium, onUpgrade, onSubscribe, currentUser, li
                 {allLiked.map(p => (
                   <ProfileCard key={String(p.id)+"_liked"} p={p} onLike={handleLike} onPass={handlePass} onSuperLike={handleSuperLike} likedProfiles={liked} matchedIds={matchedIds} onMessage={handleMessage} isPremium={isPremium} superLikedProfiles={superLikedProfiles} likesLeft={likesLeft} />
                 ))}
-                {discover.length > 0 && hasLiked && <div style={{ fontSize:11, fontWeight:700, color:theme.textLight, textTransform:"uppercase", letterSpacing:"0.08em", margin:"16px 0 8px" }}>Discover more</div>}
+                {discover.length > 0 && hasLiked && <div style={{ fontSize:13, fontWeight:700, color:theme.greenDeep, textTransform:"uppercase", letterSpacing:"0.08em", margin:"20px 0 8px", paddingTop:16, borderTop:"1px solid rgba(82,183,136,0.15)" }}>🔍 Discover more</div>}
                 {discover.map(p => (
                   <ProfileCard key={String(p.id)+"_"+( p.name||"")} p={p} onLike={handleLike} onPass={handlePass} onSuperLike={handleSuperLike} likedProfiles={liked} matchedIds={matchedIds} onMessage={handleMessage} isPremium={isPremium} superLikedProfiles={superLikedProfiles} likesLeft={likesLeft} />
                 ))}
