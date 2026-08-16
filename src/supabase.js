@@ -7,5 +7,8 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     autoRefreshToken: true,
     detectSessionInUrl: true,
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-  }
+  },
+  global: {
+    fetch: (url, options = {}) => fetch(url, { ...options, cache: 'no-store' }),
+  },
 })
