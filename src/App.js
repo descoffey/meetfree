@@ -909,6 +909,7 @@ const SwipeScreen = ({ onNav, isPremium, onUpgrade, onSubscribe, currentUser, li
   }, [currentUser]);
 
   useEffect(() => {
+    let cancelled = false;
     const fetchProfiles = async () => {
       if (!currentUser?.id) { setLoading(false); return; } // wait until session is fully ready
       setLoading(true);
@@ -1021,12 +1022,14 @@ const SwipeScreen = ({ onNav, isPremium, onUpgrade, onSubscribe, currentUser, li
         return sharedCount(b) - sharedCount(a);
       });
       const sortedLiked = likedReal.filter(withinDistance).sort((a, b) => haversine(myCoords, getCoords(a.postcode)) - haversine(myCoords, getCoords(b.postcode)));
+      if (cancelled) return; // a newer run has already started — don't overwrite its results
       setLikedRealProfiles(sortedLiked);
       const combined = [...sortedReal, ...dummies];
       setProfiles(combined);
       setLoading(false);
     };
     fetchProfiles();
+    return () => { cancelled = true; };
   }, [currentUser, activeFilters, likedProfiles]);
 
   useEffect(() => {
@@ -1397,7 +1400,7 @@ const SwipeScreen = ({ onNav, isPremium, onUpgrade, onSubscribe, currentUser, li
             const getKey = (p) => "supabase_" + p.id;
             const likedDummies = profiles.filter(p => !isRealProfile(p) && liked[getKey(p)] && !passedProfiles[getKey(p)]);
             const discover = profiles.filter(p => !liked[getKey(p)] && !passedProfiles[getKey(p)]);
-console.log('DEBUG:', { profilesCount: profiles.length, likedRealProfilesCount: likedRealProfiles.length, likedDummiesCount: likedDummies.length, likedProfilesKeys: Object.keys(liked).length });
+console.log('DEBUG:', { profilesCount: profiles.length, likedRealProfilesCount: likedRealProfiles.length, likedDummiesCount: likedDummies.length, likedProfilesKeys: Object.keys(liked).length, profileNames: profiles.map(p => p.name) });
             const hasLiked = likedRealProfiles.length > 0 || likedDummies.length > 0;
             const allLiked = [...likedRealProfiles, ...likedDummies];
 
