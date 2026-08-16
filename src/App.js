@@ -908,6 +908,7 @@ const SwipeScreen = ({ onNav, isPremium, onUpgrade, onSubscribe, currentUser, li
     return () => clearInterval(interval);
   }, [currentUser]);
 
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
   useEffect(() => {
     let cancelled = false;
     const fetchProfiles = async () => {
@@ -1030,7 +1031,7 @@ const SwipeScreen = ({ onNav, isPremium, onUpgrade, onSubscribe, currentUser, li
     };
     fetchProfiles();
     return () => { cancelled = true; };
-  }, [currentUser, activeFilters, likedProfiles]);
+  }, [currentUser, activeFilters, likedProfiles, refetchTrigger]);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -1050,7 +1051,7 @@ const SwipeScreen = ({ onNav, isPremium, onUpgrade, onSubscribe, currentUser, li
     setLastPassed(null);
     setRewindToast(true);
     setTimeout(() => setRewindToast(false), 2000);
-    fetchProfiles();
+    setRefetchTrigger(n => n + 1);
   };
 
   const handleSuperLike = async (profile) => {
@@ -1400,7 +1401,6 @@ const SwipeScreen = ({ onNav, isPremium, onUpgrade, onSubscribe, currentUser, li
             const getKey = (p) => "supabase_" + p.id;
             const likedDummies = profiles.filter(p => !isRealProfile(p) && liked[getKey(p)] && !passedProfiles[getKey(p)]);
             const discover = profiles.filter(p => !liked[getKey(p)] && !passedProfiles[getKey(p)]);
-console.log('DEBUG:', { profilesCount: profiles.length, likedRealProfilesCount: likedRealProfiles.length, likedDummiesCount: likedDummies.length, likedProfilesKeys: Object.keys(liked).length, profileNames: profiles.map(p => p.name) });
             const hasLiked = likedRealProfiles.length > 0 || likedDummies.length > 0;
             const allLiked = [...likedRealProfiles, ...likedDummies];
 
