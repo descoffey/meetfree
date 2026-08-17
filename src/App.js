@@ -1779,9 +1779,11 @@ const ChatDetail = ({ chat, onBack, onNav, isPremium, currentUser, unreadCount =
         const { data: matchRow } = await supabase.from("matches").select("user1,user2,user1_read_at,user2_read_at").eq("id", chat.matchId).maybeSingle();
         const col = matchRow?.user1 === currentUser?.id ? "user1_read_at" : "user2_read_at";
         const otherCol = matchRow?.user1 === currentUser?.id ? "user2_read_at" : "user1_read_at";
-        await supabase.from("matches").update({ [col]: new Date().toISOString() }).eq("id", chat.matchId);
+        const nowIso = new Date().toISOString();
+        const { data: updateData, error: updateErr } = await supabase.from("matches").update({ [col]: nowIso }).eq("id", chat.matchId).select();
+        console.log('DEBUG readAt:', { matchId: chat.matchId, col, nowIso, updateErr, updatedRows: updateData?.length });
         if (matchRow?.[otherCol]) setOtherReadAt(new Date(matchRow[otherCol]));
-      } catch(e) {}
+      } catch(e) { console.log('DEBUG readAt exception:', e); }
       const { data } = await supabase.from("messages").select("*").eq("match_id", chat.matchId).order("created_at", { ascending: true });
       setMsgs(data || []);
       setLoading(false);
@@ -3429,6 +3431,7 @@ export default function App() {
         const myReadAt = isUser1 ? m.user1_read_at : m.user2_read_at;
         const lastRead = myReadAt ? new Date(new Date(myReadAt).getTime() + 2000).toISOString() : "1970-01-01";
         const { count } = await supabase.from("messages").select("id", { count: "exact", head: true }).eq("match_id", m.id).neq("sender_id", userId).gt("created_at", lastRead);
+        console.log('DEBUG pollUnread:', { matchId: m.id, myReadAt, lastRead, unreadInThisMatch: count || 0 });
         total += count || 0;
       }));
       setUnreadCount(total);
