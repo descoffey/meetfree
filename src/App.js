@@ -975,7 +975,8 @@ const SwipeScreen = ({ onNav, isPremium, onUpgrade, onSubscribe, currentUser, li
         .filter(k => k.startsWith("supabase_"))
         .map(k => k.replace("supabase_", ""));
       // Fetch passes directly to avoid timing issues with prop loading
-      const { data: passRows } = await supabase.from("passes").select("to_user").eq("from_user", currentUser.id);
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const { data: passRows } = await supabase.from("passes").select("to_user").eq("from_user", currentUser.id).gte("created_at", thirtyDaysAgo);
       const dbPassedIds = (passRows || []).map(r => r.to_user);
       const localPassedIds = Object.keys(passedProfiles).filter(k => k.startsWith("supabase_")).map(k => k.replace("supabase_", ""));
       const passedRealIds = [...new Set([...dbPassedIds, ...localPassedIds])];
@@ -1569,7 +1570,7 @@ const ChatList = ({ onNav, onOpenChat, isPremium, onUpgrade, currentUser, onLogo
       const matchedIds = (matchRows || []).map(m => m.user1 === currentUser.id ? m.user2 : m.user1);
       const matchMap = {};
       (matchRows || []).forEach(m => { const otherId = m.user1 === currentUser.id ? m.user2 : m.user1; matchMap[otherId] = m.id; });
-      setLikedList((profiles || []).map(p => ({ ...p, isMatched: matchedIds.includes(p.id), matchId: matchMap[p.id], isSuperLike: superLikedSet.has(p.id) })));
+      setLikedList((profiles || []).filter(p => !matchedIds.includes(p.id)).map(p => ({ ...p, isMatched: false, isSuperLike: superLikedSet.has(p.id) })));
       setLikedLoading(false);
     };
     if (tab === "liked") fetchLiked();
@@ -3404,7 +3405,8 @@ export default function App() {
   };
 
   const loadPasses = async (userId) => {
-    const { data } = await supabase.from("passes").select("to_user").eq("from_user", userId);
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const { data } = await supabase.from("passes").select("to_user").eq("from_user", userId).gte("created_at", thirtyDaysAgo);
     if (data) {
       const passed = {};
       data.forEach(row => { passed["supabase_" + row.to_user] = true; });
