@@ -942,8 +942,8 @@ const SwipeScreen = ({ onNav, isPremium, onUpgrade, onSubscribe, currentUser, li
       if (activeFilters.diet) query = query.eq("diet", activeFilters.diet);
       if (activeFilters.lookingFor) query = query.eq("looking_for", activeFilters.lookingFor);
       const myShowMe = myProfile?.show_me;
-      if (myShowMe === "Women") query = query.or("gender.eq.Woman,gender.is.null");
-      else if (myShowMe === "Men") query = query.or("gender.eq.Man,gender.is.null");
+      if (myShowMe === "Women") query = query.eq("gender", "Woman");
+      else if (myShowMe === "Men") query = query.eq("gender", "Man");
       // "Everyone" or unset — no gender filter applied
       if (activeFilters.ageMin) query = query.gte("age", parseInt(activeFilters.ageMin));
       if (activeFilters.ageMax) query = query.lte("age", parseInt(activeFilters.ageMax));
@@ -975,8 +975,7 @@ const SwipeScreen = ({ onNav, isPremium, onUpgrade, onSubscribe, currentUser, li
         .filter(k => k.startsWith("supabase_"))
         .map(k => k.replace("supabase_", ""));
       // Fetch passes directly to avoid timing issues with prop loading
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-      const { data: passRows } = await supabase.from("passes").select("to_user").eq("from_user", currentUser.id).gte("created_at", thirtyDaysAgo);
+      const { data: passRows } = await supabase.from("passes").select("to_user").eq("from_user", currentUser.id);
       const dbPassedIds = (passRows || []).map(r => r.to_user);
       const localPassedIds = Object.keys(passedProfiles).filter(k => k.startsWith("supabase_")).map(k => k.replace("supabase_", ""));
       const passedRealIds = [...new Set([...dbPassedIds, ...localPassedIds])];
@@ -1570,7 +1569,7 @@ const ChatList = ({ onNav, onOpenChat, isPremium, onUpgrade, currentUser, onLogo
       const matchedIds = (matchRows || []).map(m => m.user1 === currentUser.id ? m.user2 : m.user1);
       const matchMap = {};
       (matchRows || []).forEach(m => { const otherId = m.user1 === currentUser.id ? m.user2 : m.user1; matchMap[otherId] = m.id; });
-      setLikedList((profiles || []).filter(p => !matchedIds.includes(p.id)).map(p => ({ ...p, isMatched: false, isSuperLike: superLikedSet.has(p.id) })));
+      setLikedList((profiles || []).map(p => ({ ...p, isMatched: matchedIds.includes(p.id), matchId: matchMap[p.id], isSuperLike: superLikedSet.has(p.id) })));
       setLikedLoading(false);
     };
     if (tab === "liked") fetchLiked();
@@ -3405,8 +3404,7 @@ export default function App() {
   };
 
   const loadPasses = async (userId) => {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    const { data } = await supabase.from("passes").select("to_user").eq("from_user", userId).gte("created_at", thirtyDaysAgo);
+    const { data } = await supabase.from("passes").select("to_user").eq("from_user", userId);
     if (data) {
       const passed = {};
       data.forEach(row => { passed["supabase_" + row.to_user] = true; });
