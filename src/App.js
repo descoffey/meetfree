@@ -661,7 +661,7 @@ const ProfileCard = ({ p, onLike, onPass, onSuperLike, likedProfiles, matchedIds
   };
 
   return (
-    <div style={{ borderRadius: 20, overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.07)", border: "1px solid rgba(82,183,136,0.12)", background: theme.warmWhite, marginBottom: 22 }}>
+    <div style={{ borderRadius: 20, overflow: "hidden", boxShadow: "0 6px 24px rgba(0,0,0,0.10)", background: "white", marginBottom: 22 }}>
       <div onTouchStart={handlePhotoTouchStart} onTouchEnd={handlePhotoTouchEnd} style={{ height: 220, background: "linear-gradient(135deg,#d8f3dc,#b7e4c7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 90, position: "relative", overflow:"hidden" }}>
         {photos.length > 0
           ? <img src={resizePhoto(photos[photoIdx], 600)} alt={p.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} onLoad={e => { e.target.style.opacity=1; }} style={{ width:"100%", height:"100%", objectFit:"cover", position:"absolute", inset:0, opacity:0, transition:"opacity 0.3s" }} />
@@ -1378,7 +1378,7 @@ const SwipeScreen = ({ onNav, isPremium, onUpgrade, onSubscribe, currentUser, li
         </div>
       )}
       {/* Profile list */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "8px 12px 8px" }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: "8px 12px 8px", background: theme.cream }}>
 
 
         {profiles.length === 0 && likedRealProfiles.length === 0 ? (
