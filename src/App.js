@@ -3513,11 +3513,27 @@ export default function App() {
   useEffect(() => {
     if (!currentUser) return;
     const interval = setInterval(() => pollUnread(currentUser.id), 8000);
-    // Update last_seen every 5 minutes while active
-    const seenInterval = setInterval(() => {
+    // Update last_seen every 5 minutes, but only while the tab is actually
+    // visible — otherwise a forgotten background tab keeps refreshing
+    // "Active now" indefinitely even though nobody's actually looking at
+    // the app. Also refresh immediately the moment the tab becomes visible
+    // again, so genuinely returning to the app shows as active right away
+    // instead of waiting for the next 5-minute tick.
+    const updateLastSeen = () => {
       supabase.from("profiles").update({ last_seen: new Date().toISOString() }).eq("id", currentUser.id).then(() => {});
+    };
+    const seenInterval = setInterval(() => {
+      if (!document.hidden) updateLastSeen();
     }, 5 * 60 * 1000);
-    return () => { clearInterval(interval); clearInterval(seenInterval); };
+    const handleVisibility = () => {
+      if (!document.hidden) updateLastSeen();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      clearInterval(interval);
+      clearInterval(seenInterval);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, [currentUser]);
 
   const handleNav = async (s) => {
