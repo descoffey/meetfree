@@ -11,15 +11,15 @@ const theme = {
 
 
 const INTEREST_GROUPS = [
-  { group: "📚 Books & Reading", icon: "📚", items: ["📚 Fiction", "📚 Non-fiction", "📚 Sci-fi", "📚 Fantasy", "📚 Biography", "📚 Self-help", "📚 Philosophy", "📚 Poetry"] },
-  { group: "🎵 Music", icon: "🎵", items: ["🎵 Live gigs", "🎵 Playing music", "🎵 Festivals", "🎵 Vinyl & records", "🎵 Singing"] },
-  { group: "💪 Sport & Fitness", icon: "💪", items: ["⚽ Football", "🚴 Cycling", "🏃 Running", "🧘 Yoga", "🏊 Swimming", "🏔️ Hiking", "🧗 Climbing", "🏋️ Gym", "⚽ Team sports"] },
-  { group: "🎨 Arts & Creativity", icon: "🎨", items: ["🎨 Visual art", "✍️ Writing", "📸 Photography", "🎬 Film making", "🎭 Theatre", "🖶 Crafts"] },
-  { group: "🍳 Food & Drink", icon: "🍳", items: ["🍳 Cooking", "🌱 Baking", "☕ Coffee", "🍵 Tea", "🍷 Wine & drinks", "🌍 Food travel"] },
-  { group: "🌍 Travel & Outdoors", icon: "🌍", items: ["✈️ Travel", "🏕️ Camping", "🌱 Gardening", "🐾 Nature walks", "🌊 Beach & sea"] },
-  { group: "🎬 Screen & Gaming", icon: "🎬", items: ["🎬 Film", "📺 TV & series", "🎮 Gaming", "🎲 Board games", "📻 Podcasts"] },
-  { group: "🌿 Lifestyle & Wellbeing", icon: "🌿", items: ["🧘 Meditation", "🌿 Wellness", "🐾 Animals & pets", "🌱 Sustainability", "🌍 Activism", "🧠 Personal growth"] },
-  { group: "🖥️ Technology", icon: "🖥️", items: ["🖥️ Tech & gadgets", "💻 Coding", "🤖 AI & science", "🚀 Space"] },
+  { group: "📚 Books & Reading", icon: "📚", items: ["📚 Fiction", "📚 Non-fiction", "📚 Sci-fi", "📚 Fantasy", "📚 Biography", "📚 Self-help", "📚 Philosophy", "📚 Poetry", "🔎 Mystery/Thriller", "💕 Romance", "👻 Horror", "🏛️ Classics", "💥 Graphic novels & comics"] },
+  { group: "🎵 Music", icon: "🎵", items: ["🎵 Live gigs", "🎵 Playing music", "🎵 Festivals", "🎵 Vinyl & records", "🎵 Singing", "🎸 Rock", "🎤 Pop", "🎷 Jazz", "🎻 Classical", "🎧 Hip-Hop", "🎹 Electronic", "🎙️ Indie", "🤠 Country", "🤘 Metal", "🪕 Folk", "🎶 R&B/Soul", "🌴 Reggae"] },
+  { group: "💪 Sport & Fitness", icon: "💪", items: ["⚽ Football", "🚴 Cycling", "🏃 Running", "🧘 Yoga", "🏊 Swimming", "🏔️ Hiking", "🧗 Climbing", "🏋️ Gym", "⚽ Team sports", "🏉 Rugby", "🏏 Cricket", "🏀 Basketball", "🎾 Tennis", "🥋 Martial arts", "💃 Dance"] },
+  { group: "🎨 Arts & Creativity", icon: "🎨", items: ["🎨 Visual art", "✍️ Writing", "📸 Photography", "🎬 Film making", "🎭 Theatre", "🖶 Crafts", "🖌️ Painting", "✏️ Drawing", "🗿 Sculpture", "🖥️ Digital art", "👗 Fashion & design"] },
+  { group: "🍳 Food & Drink", icon: "🍳", items: ["🍳 Cooking", "🌱 Baking", "☕ Coffee", "🍵 Tea", "🍷 Wine & drinks", "🌍 Food travel", "🍝 Italian", "🍜 Asian", "🌮 Mexican", "🧆 Middle Eastern", "🌱 Vegan cooking", "🥙 Street food"] },
+  { group: "🌍 Travel & Outdoors", icon: "🌍", items: ["✈️ Travel", "🏕️ Camping", "🌱 Gardening", "🐾 Nature walks", "🌊 Beach & sea", "🎒 Backpacking", "🏙️ City breaks", "🚗 Road trips", "⛷️ Mountains & skiing"] },
+  { group: "🎬 Screen & Gaming", icon: "🎬", items: ["🎬 Film", "📺 TV & series", "🎮 Gaming", "🎲 Board games", "📻 Podcasts", "😂 Comedy", "🎭 Drama", "🎥 Documentaries", "🇯🇵 Anime", "🔍 True crime"] },
+  { group: "🌿 Lifestyle & Wellbeing", icon: "🌿", items: ["🧘 Meditation", "🌿 Wellness", "🐾 Animals & pets", "🌱 Sustainability", "🌍 Activism", "🧠 Personal growth", "🙏 Mindfulness", "🤝 Volunteering", "✨ Spirituality"] },
+  { group: "🖥️ Technology", icon: "🖥️", items: ["🖥️ Tech & gadgets", "💻 Coding", "🤖 AI & science", "🚀 Space", "🦾 Robotics", "₿ Crypto & blockchain", "🕹️ Gaming hardware"] },
 ];
 const ALL_INTERESTS = INTEREST_GROUPS.flatMap(g => g.items);
 
