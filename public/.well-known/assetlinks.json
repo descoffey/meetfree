@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "uk.meetfree.app",
+      "sha256_cert_fingerprints": ["8D:C1:39:79:81:CF:26:72:79:D8:04:AD:29:92:1E:C1:B4:13:D7:02:18:0D:5E:51:E4:12:3A:1C:9A:33:20:67"]
+    }
+  }
+]
