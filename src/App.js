@@ -649,6 +649,7 @@ const ProfileCard = ({ p, onLike, onPass, onSuperLike, likedProfiles, matchedIds
     return [];
   })();
   const [photoIdx, setPhotoIdx] = useState(0);
+  const [showFullPhoto, setShowFullPhoto] = useState(false);
   const touchStartX = useRef(null);
   const handlePhotoTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
   const handlePhotoTouchEnd = (e) => {
@@ -660,7 +661,7 @@ const ProfileCard = ({ p, onLike, onPass, onSuperLike, likedProfiles, matchedIds
     if (dx > 0 && photoIdx > 0) setPhotoIdx(i => i - 1);
   };
 
-  return (
+  return (<>
     <div style={{ borderRadius: 20, overflow: "hidden", boxShadow: "0 8px 28px rgba(26,58,42,0.14)", border: `4px solid ${theme.greenBright}`, background: "white", marginBottom: 32 }}>
       <div onTouchStart={handlePhotoTouchStart} onTouchEnd={handlePhotoTouchEnd} style={{ height: 220, background: "linear-gradient(135deg,#d8f3dc,#b7e4c7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 90, position: "relative", overflow:"hidden" }}>
         {photos.length > 0
@@ -675,6 +676,13 @@ const ProfileCard = ({ p, onLike, onPass, onSuperLike, likedProfiles, matchedIds
         </div>
         {p.boosted_until && new Date(p.boosted_until) > new Date() && (
           <div style={{ position:"absolute", top:10, left:10, background:"linear-gradient(135deg,#f4a829,#e07a5f)", color:"white", fontSize:11, fontWeight:700, padding:"4px 10px", borderRadius:50, zIndex:2 }}>🚀 Boosted</div>
+        )}
+        {photos.length > 0 && (
+          <button
+            onClick={e => { e.stopPropagation(); setShowFullPhoto(true); }}
+            style={{ position:"absolute", bottom:8, right:8, zIndex:6, background:"rgba(0,0,0,0.5)", border:"none", borderRadius:"50%", width:30, height:30, fontSize:14, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"white" }}
+            aria-label="View full photo"
+          >⤢</button>
         )}
         {photos.length > 1 && (
           <>
@@ -733,7 +741,26 @@ const ProfileCard = ({ p, onLike, onPass, onSuperLike, likedProfiles, matchedIds
         )}
       </div>
     </div>
-  );
+
+      {showFullPhoto && photos.length > 0 && (
+        <div
+          onClick={() => setShowFullPhoto(false)}
+          style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.9)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center" }}
+        >
+          <button
+            onClick={() => setShowFullPhoto(false)}
+            style={{ position:"absolute", top:16, right:16, background:"rgba(255,255,255,0.15)", border:"none", borderRadius:"50%", width:36, height:36, fontSize:18, color:"white", cursor:"pointer" }}
+            aria-label="Close"
+          >✕</button>
+          <img
+            src={resizePhoto(photos[photoIdx], 1200)}
+            alt={p.name}
+            onClick={e => e.stopPropagation()}
+            style={{ maxWidth:"92%", maxHeight:"85%", objectFit:"contain", borderRadius:8 }}
+          />
+        </div>
+      )}
+  </>);
 };
 
 // ─── DISCOVER SCREEN (full list style) ───────────────────────────────────────
