@@ -758,6 +758,27 @@ const ProfileCard = ({ p, onLike, onPass, onSuperLike, likedProfiles, matchedIds
             onClick={e => e.stopPropagation()}
             style={{ maxWidth:"92%", maxHeight:"85%", objectFit:"contain", borderRadius:8 }}
           />
+          {photos.length > 1 && photoIdx > 0 && (
+            <button
+              onClick={e => { e.stopPropagation(); setPhotoIdx(i => Math.max(0, i - 1)); }}
+              style={{ position:"absolute", left:16, top:"50%", transform:"translateY(-50%)", background:"rgba(255,255,255,0.15)", border:"none", borderRadius:"50%", width:44, height:44, fontSize:22, color:"white", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}
+              aria-label="Previous photo"
+            >‹</button>
+          )}
+          {photos.length > 1 && photoIdx < photos.length - 1 && (
+            <button
+              onClick={e => { e.stopPropagation(); setPhotoIdx(i => Math.min(photos.length - 1, i + 1)); }}
+              style={{ position:"absolute", right:16, top:"50%", transform:"translateY(-50%)", background:"rgba(255,255,255,0.15)", border:"none", borderRadius:"50%", width:44, height:44, fontSize:22, color:"white", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}
+              aria-label="Next photo"
+            >›</button>
+          )}
+          {photos.length > 1 && (
+            <div style={{ position:"absolute", bottom:20, left:0, right:0, display:"flex", justifyContent:"center", gap:6 }}>
+              {photos.map((_, i) => (
+                <div key={i} style={{ width: i === photoIdx ? 20 : 7, height:7, borderRadius:4, background: i === photoIdx ? "white" : "rgba(255,255,255,0.4)", transition:"all 0.2s" }} />
+              ))}
+            </div>
+          )}
         </div>
       )}
   </>);
