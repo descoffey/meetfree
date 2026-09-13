@@ -882,6 +882,12 @@ const SwipeScreen = ({ onNav, isPremium, onUpgrade, onSubscribe, currentUser, li
     const key = "meetfree_gold_banner_" + currentUser.id;
     if (!localStorage.getItem(key)) { setShowGoldBanner(true); localStorage.setItem(key, "1"); }
   }, [currentUser, isPremium]);
+  const [showFollowBanner, setShowFollowBanner] = useState(false);
+  useEffect(() => {
+    if (!currentUser) return;
+    const key = "meetfree_follow_banner_seen_" + currentUser.id;
+    if (!localStorage.getItem(key)) setShowFollowBanner(true);
+  }, [currentUser]);
   useEffect(() => { if (currentUser) setShowTip(!localStorage.getItem("meetfree_tip_seen_" + currentUser.id)); }, [currentUser]);
   const [showChecklist, setShowChecklist] = useState(false);
   const [profileData, setProfileData] = useState(null);
@@ -1252,6 +1258,16 @@ const SwipeScreen = ({ onNav, isPremium, onUpgrade, onSubscribe, currentUser, li
 
   return (
     <PhoneShell>
+      {showFollowBanner && (
+        <div style={{ position:"absolute", top:12, left:12, right:12, zIndex:150, background:"white", borderRadius:16, padding:"12px 14px", boxShadow:"0 4px 16px rgba(26,58,42,0.18)", display:"flex", alignItems:"center", justifyContent:"space-between", gap:10 }}>
+          <div style={{ fontSize:13, color:theme.greenDeep, fontWeight:600, lineHeight:1.3 }}>📸 Follow us for updates &amp; new features!</div>
+          <div style={{ display:"flex", gap:6, alignItems:"center", flexShrink:0 }}>
+            <button onClick={() => window.open("https://instagram.com/meetfree.uk", "_blank")} style={{ background:"none", border:"none", fontSize:18, cursor:"pointer" }} aria-label="Instagram">📷</button>
+            <button onClick={() => window.open("https://www.facebook.com/profile.php?id=61590732057649", "_blank")} style={{ background:"none", border:"none", fontSize:18, cursor:"pointer" }} aria-label="Facebook">👍</button>
+            <button onClick={() => { setShowFollowBanner(false); if (currentUser) localStorage.setItem("meetfree_follow_banner_seen_" + currentUser.id, "1"); }} style={{ background:"none", border:"none", fontSize:16, cursor:"pointer", color:theme.textLight }} aria-label="Dismiss">✕</button>
+          </div>
+        </div>
+      )}
       {matchPopup && (
         <div style={{ position:"absolute", inset:0, zIndex:200, background:"rgba(26,58,42,0.95)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", borderRadius:44, padding:32, textAlign:"center" }}>
           <div style={{ fontSize:64, marginBottom:8 }}>🎉</div>
